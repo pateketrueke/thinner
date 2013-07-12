@@ -47,6 +47,7 @@ application = lineman.config.extend "application",
   clean:
     js:
       src: [
+        "coverage"
         "<%= files.coffee.generated %>"
         "<%= files.coffee.generatedSpec %>"
         "<%= files.js.vendor.concatenated %>"
