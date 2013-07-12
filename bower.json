@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "router.js": "https://github.com/tildeio/router.js.git",
+    "route-recognizer": "https://github.com/tildeio/route-recognizer.git",
+    "rsvp.js": "https://github.com/tildeio/rsvp.js.git"
+  },
+  "devDependencies": {
+    "jasmine.async": "~0.1.0",
+    "blanket": "~1.1.5"
+  }
+}
