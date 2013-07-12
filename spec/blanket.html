@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <title>Test'em</title>
+
+  <script src="/testem.js"></script>
+
+  <link rel="stylesheet" href="/testem/jasmine.css">
+
+  <script src="/testem/jasmine.js"></script>
+  <script src="/testem/jasmine-html.js"></script>
+  <script src="/vendor/components/jasmine.async/lib/jasmine.async.js"></script>
+
+  <script data-cover-flags="debug" type="text/javascript" src="/vendor/components/blanket/dist/jasmine/blanket_jasmine.js"></script>
+
+  <script src="/coverage/main.js"></script>
+
+  <script src="/generated/js/vendor.js"></script>
+  <script src="/generated/js/spec/main.js"></script>
+
+
+  <script>
+    (function() {
+      var jasmineEnv = jasmine.getEnv()
+      var htmlReporter = new jasmine.HtmlReporter();
+
+      jasmineEnv.updateInterval = 8000;
+      jasmineEnv.addReporter(htmlReporter);
+
+      jasmineEnv.specFilter = function(spec) {
+        return htmlReporter.specFilter(spec);
+      };
+
+    })();
+  </script>
+
+  </head>
+<body>
+</body>
+</html>
