@@ -1,0 +1,7 @@
+{
+  "framework" : "jasmine",
+  "launch_in_dev" : ["Chrome", "Chromium"],
+  "launch_in_ci" : ["PhantomJS"],
+  "before_tests": "lineman grunt blanket",
+  "test_page": "spec/blanket.html"
+}
