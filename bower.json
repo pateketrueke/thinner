@@ -1,4 +1,15 @@
 {
+  "name": "app-router-lineman",
+  "version": "0.0.1",
+  "ignore": [
+    ".*",
+    "app",
+    "spec",
+    "config",
+    "Gruntfile.js",
+    "package.json",
+    "README.md"
+  ],
   "dependencies": {
     "router.js": "https://github.com/tildeio/router.js.git",
     "route-recognizer": "https://github.com/tildeio/route-recognizer.git",
