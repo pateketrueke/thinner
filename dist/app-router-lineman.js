@@ -2,27 +2,23 @@
   'use strict';
 
   root.App = (function (undefined) {
-    return function (router) {
+    return function (context, path) {
       // private
-      var instance,
-          matcher,
-          method,
-          exception,
-          load_modules,
+      var exception, instance, matcher, loader, router,
           required = ['Router', 'RouteRecognizer', 'RSVP'],
-          defaults = router === undefined || 'function' !== typeof router,
-          default_path = document.location.pathname || '/',
-          default_context = document.body || null;
+          default_path = path || document.location.pathname || '/',
+          default_context = context || document.body,
+          default_modules = [];
 
 
       // dependencies (?)
       try {
-        router = defaults ? new Router() : router ? router() : null;
+        router = new Router();
       } catch (e) {
         throw new Error('<' + required.join(',') + '> are missing classes?');
       } finally {
         if (! router) {
-          throw new Error('Missing a valid router!');
+          throw new Error('missing a valid router!');
         }
       }
 
@@ -35,7 +31,7 @@
             handlers = {};
 
         router.map(function(match) {
-          handlers = routes(match) || {};
+          handlers = routes.apply(instance, [match]) || {};
         });
 
         for (key in handlers) {
@@ -64,10 +60,10 @@
           module = new modules[index]();
 
           if (! module.initialize_module || 'function' !== typeof module.initialize_module) {
-            klass = modules[index].toString();
+            klass = String(modules[index]);
             klass = /\s(.+?)\b/.exec(klass)[1];
 
-            throw new Error('<' + klass + '#initialize_method> is missing!');
+            throw new Error('<' + klass + '#initialize_module> is missing!');
           }
 
           module.initialize_module({ draw: matcher });
@@ -80,34 +76,68 @@
 
       // public
       instance = {
-        modules: [],
-        history: [],
+        title: '',
         router: router,
-        context: context,
+        history: [default_path],
+        context: {
+          $: {}, // UI
 
+          // locals
+          el: default_context,
+          uri: default_path,
+          locals: {},
 
-        run: function (context, path) {
-          if (! this.modules || 0 === this.modules.length) {
+          send: function (partial, params) {
+            var length,
+                index = 0;
+
+            partial = 'object' === typeof partial && partial.length ? partial : [partial];
+            params = 'object' === typeof params && params.length === undefined ? params : {};
+
+            length = partial.length;
+
+            for (; index < length; index += 1) {
+              partial[index].apply(instance.context, [params]);
+            }
+          }
+        },
+
+        run: function () {
+          if (! default_modules || 0 === default_modules.length) {
             throw new Error('<App#load> cannot run without modules!');
           }
 
-          path = path && path.toString();
-
-          if ('string' !== typeof path || 0 !== path.indexOf('/')) {
-            throw new Error('<' + path + '> missing root slash!');
+          if ('string' !== typeof this.context.uri || 0 !== this.context.uri.indexOf('/')) {
+            throw new Error('<' + this.context.uri + '> missing root slash!');
           }
 
-          router.handleURL(path);
+          try {
+            router.handleURL(this.context.uri);
+          } catch (exception) {
+            throw new Error('<' + this.context.uri + '> unknown route!');
+          }
 
           return this;
         },
 
         load: function (modules) {
+          var index,
+              module;
+
+          if ('function' === typeof modules) {
+            modules = [modules];
+          }
+
           if (! modules || 0 === modules.length) {
             throw new Error('<App#load> require some modules!');
           }
 
-          this.modules = loader(modules);
+          modules = loader(modules);
+
+          for (index in modules) {
+            module = modules[module];
+            default_modules.push(module);
+          }
 
           return this;
         },
@@ -120,47 +150,35 @@
           }
         },
 
-        goto: function (path) {
-          return router.redirect(path, false);
-        },
-
-        trigger: function () {
-          return router.trigger.apply(router, arguments);
-        },
-
-        redirect: function () {
-          return router.redirect.apply(router, arguments);
+        go: function (path, update) {
+          router.redirectURL(path, update == null ? true : update);
         }
       };
 
 
       // construct
-      if (defaults) {
-        router.handlers = {};
+      router.handlers = {};
 
-        router.updateURL = function(path) {
-          return history.pushState({}, 'Untitled', path);
-        };
+      router.updateURL = function(path) {
+        history.pushState({}, instance.title, path);
+      };
 
-        router.getHandler = function(name) {
-          return router.handlers[name] || {};
-        };
+      router.getHandler = function(name) {
+        return router.handlers[name] || {};
+      };
 
-        router.redirect = function(path, update) {
-          try {
-            router.handleURL(path);
-          } catch (exception) {
-            throw new Error('<' + path + '> unknown route!');
-          }
+      router.redirectURL = function(path, update) {
+        try {
+          router.handleURL(path);
+        } catch (exception) {
+          throw new Error('<' + path + '> unknown route!');
+        }
 
-          if (false !== update) {
-            instance.history.push(path);
-            router.updateURL(path);
-          }
-
-          return router;
-        };
-      }
+        if (false !== update) {
+          instance.history.push(path);
+          router.updateURL(path);
+        }
+      };
 
       return instance;
     };
