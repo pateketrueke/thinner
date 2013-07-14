@@ -22,7 +22,7 @@ application = lineman.config.extend "application",
   ]
 
   prependTasks:
-    dev: ["bower:install"]
+    common: ["bower:install"]
 
   appendTasks:
     dist: ["copy"]
