@@ -1,6 +1,6 @@
 class Home
   initialize_module: (mapper) ->
-    mapper.draw (match) =>
+    mapper.draw (match) ->
       match('/').to 'home'
       match('/hi/new').to 'make'
       match('/hi/:name').to 'show'

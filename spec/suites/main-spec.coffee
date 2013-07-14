@@ -21,10 +21,11 @@ describe 'Our application:', ->
     describe 'Looking at routes:', ->
       async = new AsyncSpec @
 
-      app.load([Home, Other]).run ctx, '/'
+      app.load([Home, Other]).run()
 
-      it 'should display "Hello world" at /', (done) ->
-        expect(get()).toEqual 'Hello World'
+      async.it 'should display "Hello world" at /', (done) ->
+        delay done, ->
+          expect(get()).toEqual 'Hello World'
 
       async.it 'should display "Hi dude!" at /hi/dude', (done) ->
         app.go '/hi/dude', off
