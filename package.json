@@ -1,6 +1,6 @@
 {
   "name": "app-router-lineman",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Application wrapper built-in on top of router.js",
   "homepage": "https://github.com/pateketrueke/app-router-lineman",
   "author": {
@@ -12,6 +12,6 @@
     "grunt-contrib-copy": "~0.4.1",
     "grunt-bower-task": "~0.2.3",
     "grunt-blanket": "0.0.8",
-    "lineman": "~>0.11.3"
+    "lineman": "~>0.11.4"
   }
 }

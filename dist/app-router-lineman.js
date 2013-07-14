@@ -31,7 +31,7 @@
             handlers = {};
 
         router.map(function(match) {
-          handlers = routes.apply(instance, [match]) || {};
+          handlers = routes.apply(instance.context, [match]) || {};
         });
 
         for (key in handlers) {
@@ -66,8 +66,8 @@
             throw new Error('<' + klass + '#initialize_module> is missing!');
           }
 
-          module.initialize_module({ draw: matcher });
-          modules[index] = { module: module, klass: klass };
+          module.initialize_module.apply(instance.context, [{ draw: matcher }]);
+          modules[index] = module;
         }
 
         return modules;
@@ -76,7 +76,7 @@
 
       // public
       instance = {
-        title: '',
+        name: 'Lineman',
         router: router,
         history: [default_path],
         context: {
@@ -85,7 +85,11 @@
           // locals
           el: default_context,
           uri: default_path,
-          locals: {},
+          globals: {},
+          helpers: {
+            url_for: function (path, params) { return instance.url(path, params); },
+            link_to: function (path) { return path.link(instance.url(path)); }
+          },
 
           send: function (partial, params) {
             var length,
@@ -107,17 +111,7 @@
             throw new Error('<App#load> cannot run without modules!');
           }
 
-          if ('string' !== typeof this.context.uri || 0 !== this.context.uri.indexOf('/')) {
-            throw new Error('<' + this.context.uri + '> missing root slash!');
-          }
-
-          try {
-            router.handleURL(this.context.uri);
-          } catch (exception) {
-            throw new Error('<' + this.context.uri + '> unknown route!');
-          }
-
-          return this;
+          return this.go(this.context.uri, false);
         },
 
         load: function (modules) {
@@ -135,7 +129,7 @@
           modules = loader(modules);
 
           for (index in modules) {
-            module = modules[module];
+            module = modules[index];
             default_modules.push(module);
           }
 
@@ -152,6 +146,8 @@
 
         go: function (path, update) {
           router.redirectURL(path, update == null ? true : update);
+
+          return this;
         }
       };
 
