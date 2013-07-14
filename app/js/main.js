@@ -36,13 +36,14 @@
         if ('boolean' === typeof params) {
           update = params;
           params = undefined;
-        } else {
-          update = params && params.update || update;
         }
 
         if (String(path).charAt(0) !== '/') {
           path = instance.url(path, params || {});
         }
+
+        update = params && params.update || update;
+        update = null == update ? true : update;
 
         return [path, params || {}, update];
       };
@@ -66,6 +67,7 @@
         url_params = link_params(path, params);
         href = url_params.shift();
         params = url_params.shift();
+        a.innerHTML = path;
         a.href = href;
 
         if (params.addEventListener) {
@@ -209,7 +211,7 @@
         go: function (path, params, update) {
           url_params = link_params(path, params, update);
 
-          router.redirectURL(url_params.shift(), update = url_params.pop() == null ? true : update);
+          router.redirectURL(url_params.shift(), url_params.pop());
 
           return this;
         }
