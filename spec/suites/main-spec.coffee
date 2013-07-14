@@ -69,3 +69,14 @@ describe 'Our application:', ->
             expect(@helpers.foo()).toEqual 'bar'
             expect(@helpers.url_for 'make').toEqual '/hi/new'
             expect(@helpers.link_to('make').outerHTML).toEqual '<a href="/hi/new">make</a>'
+
+        describe 'Finally, our links:', ->
+          a = app.link 'make'
+
+          it 'will be html-compliant', ->
+            b = app.link 'make', innerHTML: 'Hello?'
+            expect(b.outerHTML).toEqual '<a href="/hi/new">Hello?</a>'
+
+          it 'will trigger redirections', ->
+            a.click()
+            expect(app.history.length).toEqual 5
