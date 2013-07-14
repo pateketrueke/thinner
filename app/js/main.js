@@ -5,7 +5,6 @@
     return function (context, path) {
       // private
       var exception, instance, matcher, loader, router,
-          required = ['Router', 'RouteRecognizer', 'RSVP'],
           default_path = path || document.location.pathname || '/',
           default_context = context || document.body,
           default_modules = [],
@@ -15,13 +14,6 @@
           url_params,
           redirect;
 
-
-      // dependencies (?)
-      for (instance in required) {
-        if (! root[required[instance]]) {
-          throw new Error('<' + required[instance] + '> missing class!');
-        }
-      }
 
       // router.js
       router = new Router();
