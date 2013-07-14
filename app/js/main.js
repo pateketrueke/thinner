@@ -86,6 +86,10 @@
           el: default_context,
           uri: default_path,
           globals: {},
+          helpers: {
+            url_for: function (path, params) { return instance.url(path, params); },
+            link_to: function (path) { return path.link(instance.url(path)); }
+          },
 
           send: function (partial, params) {
             var length,
