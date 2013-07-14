@@ -107,17 +107,7 @@
             throw new Error('<App#load> cannot run without modules!');
           }
 
-          if ('string' !== typeof this.context.uri || 0 !== this.context.uri.indexOf('/')) {
-            throw new Error('<' + this.context.uri + '> missing root slash!');
-          }
-
-          try {
-            router.handleURL(this.context.uri);
-          } catch (exception) {
-            throw new Error('<' + this.context.uri + '> unknown route!');
-          }
-
-          return this;
+          return this.go(this.context.uri, false);
         },
 
         load: function (modules) {
