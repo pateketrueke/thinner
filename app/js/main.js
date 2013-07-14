@@ -143,7 +143,18 @@
           }
         },
 
-        go: function (path, update) {
+        go: function (url, params, update) {
+          if ('boolean' === typeof params) {
+            update = params;
+            params = undefined;
+          } else {
+            update = params && params.update || update;
+          }
+
+          if (String(url).charAt(0) !== '/') {
+            url = this.url(url, params || {});
+          }
+
           router.redirectURL(path, update == null ? true : update);
 
           return this;
