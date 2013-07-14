@@ -9,7 +9,11 @@
           default_path = path || document.location.pathname || '/',
           default_context = context || document.body,
           default_modules = [],
-          default_mixin;
+          default_mixin,
+          default_link,
+          link_params,
+          url_params,
+          redirect;
 
 
       // dependencies (?)
@@ -25,6 +29,57 @@
 
       // models
       default_mixin = function (params) { return params; };
+
+
+      // links
+      link_params = function (path, params, update) {
+        if ('boolean' === typeof params) {
+          update = params;
+          params = undefined;
+        } else {
+          update = params && params.update || update;
+        }
+
+        if (String(path).charAt(0) !== '/') {
+          path = instance.url(path, params || {});
+        }
+
+        return [path, params || {}, update];
+      };
+
+      redirect = function (to) {
+        return function (e) {
+          e.preventDefault();
+          instance.go(to);
+
+          return false;
+        };
+      };
+
+
+      // UJS
+      default_link = function (path, params) {
+        var a = document.createElement('a'),
+            attribute,
+            href;
+
+        url_params = link_params(path, params);
+        href = url_params.shift();
+        params = url_params.shift();
+        a.href = href;
+
+        if (params.addEventListener) {
+          a.addEventListener('click', redirect(href), false);
+        } else {
+          a.onclick = redirect(href);
+        }
+
+        for (attribute in params) {
+          a[attribute] = params[attribute];
+        }
+
+        return a;
+      };
 
 
       // binding
@@ -96,7 +151,7 @@
           globals: {},
           helpers: {
             url_for: function (path, params) { return instance.url(path, params); },
-            link_to: function (path) { return path.link(instance.url(path)); }
+            link_to: function (path, params, update) { return default_link(path, params, update); }
           },
 
           send: function (partial, params) {
@@ -144,6 +199,8 @@
           return this;
         },
 
+        link: function (path, params, update) { return default_link(path, params, update); },
+
         url: function (name, params) {
           try {
             return router.recognizer.generate(name, params);
@@ -152,19 +209,10 @@
           }
         },
 
-        go: function (url, params, update) {
-          if ('boolean' === typeof params) {
-            update = params;
-            params = undefined;
-          } else {
-            update = params && params.update || update;
-          }
+        go: function (path, params, update) {
+          url_params = link_params(path, params, update);
 
-          if (String(url).charAt(0) !== '/') {
-            url = this.url(url, params || {});
-          }
-
-          router.redirectURL(path, update == null ? true : update);
+          router.redirectURL(url_params.shift(), update = url_params.pop() == null ? true : update);
 
           return this;
         }
