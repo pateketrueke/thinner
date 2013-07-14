@@ -53,9 +53,15 @@ describe 'Our application:', ->
           expect(app.url 'make').toEqual '/hi/new'
           expect(app.url('show', { name: 'foo' })).toEqual '/hi/foo'
 
-        async.it 'can use send() as context mixin (?)', (done) ->
+        it 'can use send() as context mixin (?)', ->
           app.context.globals.foo = 'bar'
           app.context.send ->
             expect(@globals.foo).toEqual 'bar'
             expect(@globals.bar).toBeUndefined()
-            done()
+
+        it 'can expose useful functions as helpers', ->
+          app.context.helpers.foo = -> 'bar'
+          app.context.send ->
+            expect(@helpers.foo()).toEqual 'bar'
+            expect(@helpers.url_for 'make').toEqual '/hi/new'
+            expect(@helpers.link_to 'make').toEqual '<a href="/hi/new">make</a>'
