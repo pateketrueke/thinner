@@ -40,11 +40,11 @@ describe 'Our application:', ->
           expect(app.history.length).toEqual 1
 
       it 'should keep the history (?)', ->
-        app.go '/foo'
-        app.go '/hi/new'
-        app.go '/hi/other'
+        app.go 'test'
+        app.go 'make'
+        app.go 'show', name: 'other'
 
-        expect(-> app.go '/x').toThrow()
+        expect(-> app.go 'x').toThrow()
         expect(app.history).toEqual ['/', '/foo', '/hi/new', '/hi/other']
 
       describe 'By the way:', ->
@@ -62,7 +62,10 @@ describe 'Our application:', ->
 
         it 'can expose useful functions as helpers', ->
           app.context.helpers.foo = -> 'bar'
+          app.context.helpers.url_for = -> app.url arguments...
+          app.context.helpers.link_to = (path) -> app.link arguments...
+
           app.context.send ->
             expect(@helpers.foo()).toEqual 'bar'
             expect(@helpers.url_for 'make').toEqual '/hi/new'
-            expect(@helpers.link_to 'make').toEqual '<a href="/hi/new">make</a>'
+            expect(@helpers.link_to('make').outerHTML).toEqual '<a href="/hi/new">make</a>'
