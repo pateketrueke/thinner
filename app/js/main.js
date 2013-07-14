@@ -76,7 +76,7 @@
 
       // public
       instance = {
-        title: '',
+        name: 'Lineman',
         router: router,
         history: [default_path],
         context: {
@@ -85,7 +85,7 @@
           // locals
           el: default_context,
           uri: default_path,
-          locals: {},
+          globals: {},
 
           send: function (partial, params) {
             var length,
