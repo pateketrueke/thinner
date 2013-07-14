@@ -7,7 +7,7 @@ describe 'Our application:', ->
     app = new App null, '/'
 
     it 'will do not without modules', ->
-      expect(app.run).toThrow()
+      expect(new App(null, '/').run).toThrow()
 
     it 'will validate all their modules', ->
       expect(app.load).toThrow()
@@ -51,11 +51,11 @@ describe 'Our application:', ->
         it 'can build our application routes', ->
           expect(-> app.url 'show').toThrow()
           expect(app.url 'make').toEqual '/hi/new'
-          expect(app.url 'show', { name: 'foo' }).toEqual '/hi/foo'
+          expect(app.url('show', { name: 'foo' })).toEqual '/hi/foo'
 
         async.it 'can use send() as context mixin (?)', (done) ->
-          app.context.locals.foo = 'bar'
+          app.context.globals.foo = 'bar'
           app.context.send ->
-            expect(@locals.foo).toEqual 'bar'
-            expect(@locals.bar).toBeUndefined()
+            expect(@globals.foo).toEqual 'bar'
+            expect(@globals.bar).toBeUndefined()
             done()
