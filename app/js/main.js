@@ -50,7 +50,10 @@
 
       redirect = function (to) {
         return function (e) {
-          e && e.preventDefault();
+          if (e && e.preventDefault) {
+            e.preventDefault();
+          }
+
           instance.go(to);
 
           return false;
