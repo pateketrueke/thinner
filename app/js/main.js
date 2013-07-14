@@ -50,7 +50,7 @@
 
       redirect = function (to) {
         return function (e) {
-          e.preventDefault();
+          e && e.preventDefault();
           instance.go(to);
 
           return false;
@@ -70,7 +70,10 @@
         a.innerHTML = path;
         a.href = href;
 
-        if (params.addEventListener) {
+        if (! a.click) {
+          // FIX: PhantomJS (?)
+          a.click = redirect(href);
+        } else if (params.addEventListener) {
           a.addEventListener('click', redirect(href), false);
         } else {
           a.onclick = redirect(href);
