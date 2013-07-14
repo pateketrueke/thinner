@@ -12,15 +12,14 @@
 
 
       // dependencies (?)
-      try {
-        router = new Router();
-      } catch (e) {
-        throw new Error('<' + required.join(',') + '> are missing classes?');
-      } finally {
-        if (! router) {
-          throw new Error('missing a valid router!');
+      for (instance in required) {
+        if (! root[required[instance]]) {
+          throw new Error('<' + required[instance] + '> missing class!');
         }
       }
+
+      // router.js
+      router = new Router();
 
 
       // binding
