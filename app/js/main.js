@@ -8,7 +8,8 @@
           required = ['Router', 'RouteRecognizer', 'RSVP'],
           default_path = path || document.location.pathname || '/',
           default_context = context || document.body,
-          default_modules = [];
+          default_modules = [],
+          default_mixin;
 
 
       // dependencies (?)
@@ -20,6 +21,10 @@
 
       // router.js
       router = new Router();
+
+
+      // models
+      default_mixin = function (params) { return params; };
 
 
       // binding
@@ -40,6 +45,10 @@
           this[key].events = (result = this[key].events || null) !== null ? result : {};
 
           router.handlers[key] = this[key];
+
+          if (! ('model' in this[key])) {
+            this[key].model = default_mixin;
+          }
         }
       };
 
