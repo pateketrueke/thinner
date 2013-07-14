@@ -8,7 +8,12 @@
           required = ['Router', 'RouteRecognizer', 'RSVP'],
           default_path = path || document.location.pathname || '/',
           default_context = context || document.body,
-          default_modules = [];
+          default_modules = [],
+          default_mixin,
+          default_link,
+          link_params,
+          url_params,
+          redirect;
 
 
       // dependencies (?)
@@ -20,6 +25,63 @@
 
       // router.js
       router = new Router();
+
+
+      // models
+      default_mixin = function (params) { return params; };
+
+
+      // links
+      link_params = function (path, params, update) {
+        if ('boolean' === typeof params) {
+          update = params;
+          params = undefined;
+        }
+
+        if (String(path).charAt(0) !== '/') {
+          path = instance.url(path, params || {});
+        }
+
+        update = params && params.update || update;
+        update = null == update ? true : update;
+
+        return [path, params || {}, update];
+      };
+
+      redirect = function (to) {
+        return function (e) {
+          e.preventDefault();
+          instance.go(to);
+
+          return false;
+        };
+      };
+
+
+      // UJS
+      default_link = function (path, params) {
+        var a = document.createElement('a'),
+            attribute,
+            href;
+
+        url_params = link_params(path, params);
+        href = url_params.shift();
+        params = url_params.shift();
+        a.innerHTML = path;
+        a.href = href;
+
+        if (params.addEventListener) {
+          a.addEventListener('click', redirect(href), false);
+        } else {
+          a.onclick = redirect(href);
+        }
+
+        for (attribute in params) {
+          a[attribute] = params[attribute];
+        }
+
+        return a;
+      };
 
 
       // binding
@@ -40,6 +102,10 @@
           this[key].events = (result = this[key].events || null) !== null ? result : {};
 
           router.handlers[key] = this[key];
+
+          if (! ('model' in this[key])) {
+            this[key].model = default_mixin;
+          }
         }
       };
 
@@ -85,10 +151,7 @@
           el: default_context,
           uri: default_path,
           globals: {},
-          helpers: {
-            url_for: function (path, params) { return instance.url(path, params); },
-            link_to: function (path) { return path.link(instance.url(path)); }
-          },
+          helpers: {},
 
           send: function (partial, params) {
             var length,
@@ -135,6 +198,8 @@
           return this;
         },
 
+        link: function (path, params, update) { return default_link(path, params, update); },
+
         url: function (name, params) {
           try {
             return router.recognizer.generate(name, params);
@@ -143,8 +208,10 @@
           }
         },
 
-        go: function (path, update) {
-          router.redirectURL(path, update == null ? true : update);
+        go: function (path, params, update) {
+          url_params = link_params(path, params, update);
+
+          router.redirectURL(url_params.shift(), url_params.pop());
 
           return this;
         }
@@ -164,14 +231,15 @@
 
       router.redirectURL = function(path, update) {
         try {
-          router.handleURL(path);
+          if (false !== update) {
+            instance.history.push(path);
+            router.updateURL(path);
+            router.handleURL(path);
+          } else {
+            router.handleURL(path);
+          }
         } catch (exception) {
           throw new Error('<' + path + '> unknown route!');
-        }
-
-        if (false !== update) {
-          instance.history.push(path);
-          router.updateURL(path);
         }
       };
 
