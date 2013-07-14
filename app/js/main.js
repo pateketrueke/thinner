@@ -164,14 +164,15 @@
 
       router.redirectURL = function(path, update) {
         try {
-          router.handleURL(path);
+          if (false !== update) {
+            instance.history.push(path);
+            router.updateURL(path);
+            router.handleURL(path);
+          } else {
+            router.handleURL(path);
+          }
         } catch (exception) {
           throw new Error('<' + path + '> unknown route!');
-        }
-
-        if (false !== update) {
-          instance.history.push(path);
-          router.updateURL(path);
         }
       };
 
