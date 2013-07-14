@@ -31,7 +31,7 @@
             handlers = {};
 
         router.map(function(match) {
-          handlers = routes.apply(instance, [match]) || {};
+          handlers = routes.apply(instance.context, [match]) || {};
         });
 
         for (key in handlers) {
@@ -66,8 +66,8 @@
             throw new Error('<' + klass + '#initialize_module> is missing!');
           }
 
-          module.initialize_module({ draw: matcher });
-          modules[index] = { module: module, klass: klass };
+          module.initialize_module.apply(instance.context, [{ draw: matcher }]);
+          modules[index] = module;
         }
 
         return modules;
@@ -135,7 +135,7 @@
           modules = loader(modules);
 
           for (index in modules) {
-            module = modules[module];
+            module = modules[index];
             default_modules.push(module);
           }
 
@@ -152,6 +152,8 @@
 
         go: function (path, update) {
           router.redirectURL(path, update == null ? true : update);
+
+          return this;
         }
       };
 
