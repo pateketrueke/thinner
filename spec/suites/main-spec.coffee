@@ -9,11 +9,18 @@ describe 'Our application:', ->
     it 'will do not without modules', ->
       expect(new App(null, '/').run).toThrow()
 
+    it 'will expose registered modules', ->
+      expect(App.modules()).toEqual { 'Sample': App.Sample }
+
     it 'will validate all their modules', ->
       expect(app.load).toThrow()
+      expect(-> app.load []).toThrow()
       expect(-> app.load Blank).toThrow()
       expect(-> app.load Breaking).toThrow()
       expect(-> app.load Undefined).toThrow()
+      expect(-> app.load App.modules()).toThrow()
+      expect(-> app.load ['Irregular value']).toThrow()
+
 
     it 'will not run over invalid routes', ->
       expect(new App(null, '/x/y/z').load(Other).run).toThrow()
