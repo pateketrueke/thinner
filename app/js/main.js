@@ -111,26 +111,28 @@
       // methods
       loader = function (modules) {
         var module,
-            klass,
-            index = 0,
-            length = modules.length;
+            klass;
 
-        for (; index < length; index += 1) {
-          if ('function' !== typeof modules[index]) {
-            throw new Error('<' + modules[index] + '> is not a module!');
+        for (module in modules) {
+          if (! isNaN(parseInt(module, 10))) {
+            klass = String(modules[module]);
+            klass = /\s(.+?)\b/.exec(klass)[1];
+          } else {
+            klass = module;
           }
 
-          module = new modules[index]();
+          if ('function' !== typeof modules[module]) {
+            throw new Error('<' + klass + '> is not a module!');
+          }
+
+          module = new modules[module]();
 
           if (! module.initialize_module || 'function' !== typeof module.initialize_module) {
-            klass = String(modules[index]);
-            klass = /\s(.+?)\b/.exec(klass)[1];
-
             throw new Error('<' + klass + '#initialize_module> is missing!');
           }
 
           module.initialize_module.apply(instance.context, [{ draw: matcher }]);
-          modules[index] = module;
+          modules[module] = module;
         }
 
         return modules;
@@ -178,7 +180,7 @@
           var index,
               module;
 
-          if ('function' === typeof modules) {
+          if ('object' !== typeof modules) {
             modules = [modules];
           }
 
