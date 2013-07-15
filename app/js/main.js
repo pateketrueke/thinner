@@ -243,4 +243,19 @@
     };
   })();
 
+
+  // helpers (?)
+  root.App.modules = function () {
+    var module,
+        list = {};
+
+    for (module in root.App) {
+      if (module.charAt(0) === module.charAt(0).toUpperCase()) {
+        list[module] = root.App[module];
+      }
+    }
+
+    return list;
+  };
+
 })(this);
