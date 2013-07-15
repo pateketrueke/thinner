@@ -5,7 +5,6 @@
     return function (context, path) {
       // private
       var exception, instance, matcher, loader, router,
-          required = ['Router', 'RouteRecognizer', 'RSVP'],
           default_path = path || document.location.pathname || '/',
           default_context = context || document.body,
           default_modules = [],
@@ -15,13 +14,6 @@
           url_params,
           redirect;
 
-
-      // dependencies (?)
-      for (instance in required) {
-        if (! root[required[instance]]) {
-          throw new Error('<' + required[instance] + '> missing class!');
-        }
-      }
 
       // router.js
       router = new Router();
@@ -50,7 +42,10 @@
 
       redirect = function (to) {
         return function (e) {
-          e.preventDefault();
+          if (e && e.preventDefault) {
+            e.preventDefault();
+          }
+
           instance.go(to);
 
           return false;
@@ -70,7 +65,10 @@
         a.innerHTML = path;
         a.href = href;
 
-        if (params.addEventListener) {
+        if (! a.click) {
+          // FIX: PhantomJS (?)
+          a.click = redirect(href);
+        } else if (params.addEventListener) {
           a.addEventListener('click', redirect(href), false);
         } else {
           a.onclick = redirect(href);
@@ -113,26 +111,28 @@
       // methods
       loader = function (modules) {
         var module,
-            klass,
-            index = 0,
-            length = modules.length;
+            klass;
 
-        for (; index < length; index += 1) {
-          if ('function' !== typeof modules[index]) {
-            throw new Error('<' + modules[index] + '> is not a module!');
+        for (module in modules) {
+          if (! isNaN(parseInt(module, 10))) {
+            klass = String(modules[module]);
+            klass = /\s(.+?)\b/.exec(klass)[1];
+          } else {
+            klass = module;
           }
 
-          module = new modules[index]();
+          if ('function' !== typeof modules[module]) {
+            throw new Error('<' + klass + '> is not a module!');
+          }
+
+          module = new modules[module]();
 
           if (! module.initialize_module || 'function' !== typeof module.initialize_module) {
-            klass = String(modules[index]);
-            klass = /\s(.+?)\b/.exec(klass)[1];
-
             throw new Error('<' + klass + '#initialize_module> is missing!');
           }
 
           module.initialize_module.apply(instance.context, [{ draw: matcher }]);
-          modules[index] = module;
+          modules[module] = module;
         }
 
         return modules;
@@ -180,7 +180,7 @@
           var index,
               module;
 
-          if ('function' === typeof modules) {
+          if ('object' !== typeof modules) {
             modules = [modules];
           }
 
@@ -230,21 +230,32 @@
       };
 
       router.redirectURL = function(path, update) {
-        try {
-          if (false !== update) {
-            instance.history.push(path);
-            router.updateURL(path);
-            router.handleURL(path);
-          } else {
-            router.handleURL(path);
-          }
-        } catch (exception) {
-          throw new Error('<' + path + '> unknown route!');
+        if (false !== update) {
+          instance.history.push(path);
+          router.updateURL(path);
+          router.handleURL(path);
+        } else {
+          router.handleURL(path);
         }
       };
 
       return instance;
     };
   })();
+
+
+  // helpers (?)
+  root.App.modules = function () {
+    var module,
+        list = {};
+
+    for (module in root.App) {
+      if (module.charAt(0) === module.charAt(0).toUpperCase()) {
+        list[module] = root.App[module];
+      }
+    }
+
+    return list;
+  };
 
 })(this);

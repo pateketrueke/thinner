@@ -1,6 +1,6 @@
 {
   "name": "app-router-lineman",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Application wrapper built-in on top of router.js",
   "homepage": "https://github.com/pateketrueke/app-router-lineman",
   "author": {
