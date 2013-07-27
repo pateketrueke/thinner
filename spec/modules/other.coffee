@@ -3,6 +3,6 @@ class Other
     mapper.draw (match) ->
       match('/foo').to 'test'
 
-      test: ->
-
-    mapper.test.events.testEvent = (handler) -> set 'thing'
+      test:
+        events:
+          testEvent: (handler) -> set 'thing'

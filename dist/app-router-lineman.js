@@ -31,7 +31,7 @@
         }
 
         if (String(path).charAt(0) !== '/') {
-          path = instance.url(path, params || {});
+          path = instance.context.url(path, params || {});
         }
 
         update = params && params.update || update;
@@ -46,7 +46,7 @@
             e.preventDefault();
           }
 
-          instance.go(to);
+          instance.context.go(to);
 
           return false;
         };
@@ -85,12 +85,15 @@
       // binding
       matcher = function (routes) {
         var key,
+            self,
             result,
             handler,
             handlers = {};
 
+        self = this;
+
         router.map(function(match) {
-          handlers = routes.apply(instance.context, [match]) || {};
+          handlers = routes.apply(self, [match]) || {};
         });
 
         for (key in handlers) {
@@ -110,8 +113,15 @@
 
       // methods
       loader = function (modules) {
-        var module,
+        var binding,
+            module,
             klass;
+
+        binding = function (self, mixin) {
+          return function (routes) {
+            return mixin.apply(self, [routes]);
+          };
+        };
 
         for (module in modules) {
           if (! isNaN(parseInt(module, 10))) {
@@ -125,14 +135,15 @@
             throw new Error('<' + klass + '> is not a module!');
           }
 
-          module = new modules[module]();
+          module = new modules[module](instance);
 
           if (! module.initialize_module || 'function' !== typeof module.initialize_module) {
             throw new Error('<' + klass + '#initialize_module> is missing!');
           }
 
-          module.initialize_module.apply(instance.context, [{ draw: matcher }]);
-          modules[module] = module;
+          instance.context.send(module.initialize_module, { draw: binding(module, matcher) });
+
+          modules[klass] = module;
         }
 
         return modules;
@@ -141,7 +152,6 @@
 
       // public
       instance = {
-        name: 'Lineman',
         router: router,
         history: [default_path],
         context: {
@@ -153,6 +163,7 @@
           globals: {},
           helpers: {},
 
+          // API
           send: function (partial, params) {
             var length,
                 index = 0;
@@ -165,6 +176,22 @@
             for (; index < length; index += 1) {
               partial[index].apply(instance.context, [params]);
             }
+          },
+
+          link: function (path, params, update) { return default_link(path, params, update); },
+
+          url: function (name, params) {
+            try {
+              return router.recognizer.generate(name, params);
+            } catch (exception) {
+              throw new Error('<' + name + '> route not found or missing params!');
+            }
+          },
+
+          go: function (path, params, update) {
+            url_params = link_params(path, params, update);
+
+            router.redirectURL(url_params.shift(), url_params.pop());
           }
         },
 
@@ -173,7 +200,7 @@
             throw new Error('<App#load> cannot run without modules!');
           }
 
-          return this.go(this.context.uri, false);
+          return this.context.go(this.context.uri, false);
         },
 
         load: function (modules) {
@@ -194,24 +221,6 @@
             module = modules[index];
             default_modules.push(module);
           }
-
-          return this;
-        },
-
-        link: function (path, params, update) { return default_link(path, params, update); },
-
-        url: function (name, params) {
-          try {
-            return router.recognizer.generate(name, params);
-          } catch (exception) {
-            throw new Error('<' + name + '> route not found or missing params!');
-          }
-        },
-
-        go: function (path, params, update) {
-          url_params = link_params(path, params, update);
-
-          router.redirectURL(url_params.shift(), url_params.pop());
 
           return this;
         }

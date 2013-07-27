@@ -85,12 +85,15 @@
       // binding
       matcher = function (routes) {
         var key,
+            self,
             result,
             handler,
             handlers = {};
 
+        self = this;
+
         router.map(function(match) {
-          handlers = routes.apply(instance.context, [match]) || {};
+          handlers = routes.apply(self, [match]) || {};
         });
 
         for (key in handlers) {
@@ -110,8 +113,15 @@
 
       // methods
       loader = function (modules) {
-        var module,
+        var binding,
+            module,
             klass;
+
+        binding = function (self, mixin) {
+          return function (routes) {
+            return mixin.apply(self, [routes]);
+          };
+        };
 
         for (module in modules) {
           if (! isNaN(parseInt(module, 10))) {
@@ -131,7 +141,7 @@
             throw new Error('<' + klass + '#initialize_module> is missing!');
           }
 
-          instance.context.send(module.initialize_module, { draw: matcher });
+          instance.context.send(module.initialize_module, { draw: binding(module, matcher) });
 
           modules[klass] = module;
         }
