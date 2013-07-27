@@ -31,7 +31,7 @@
         }
 
         if (String(path).charAt(0) !== '/') {
-          path = instance.url(path, params || {});
+          path = instance.context.url(path, params || {});
         }
 
         update = params && params.update || update;
@@ -46,7 +46,7 @@
             e.preventDefault();
           }
 
-          instance.go(to);
+          instance.context.go(to);
 
           return false;
         };
@@ -125,7 +125,7 @@
             throw new Error('<' + klass + '> is not a module!');
           }
 
-          module = new modules[klass](instance);
+          module = new modules[module](instance);
 
           if (! module.initialize_module || 'function' !== typeof module.initialize_module) {
             throw new Error('<' + klass + '#initialize_module> is missing!');
@@ -182,8 +182,6 @@
             url_params = link_params(path, params, update);
 
             router.redirectURL(url_params.shift(), url_params.pop());
-
-            return this;
           }
         },
 
