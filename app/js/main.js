@@ -125,14 +125,15 @@
             throw new Error('<' + klass + '> is not a module!');
           }
 
-          module = new modules[module]();
+          module = new modules[klass](instance);
 
           if (! module.initialize_module || 'function' !== typeof module.initialize_module) {
             throw new Error('<' + klass + '#initialize_module> is missing!');
           }
 
-          module.initialize_module.apply(instance.context, [{ draw: matcher }]);
-          modules[module] = module;
+          instance.context.send(module.initialize_module, { draw: matcher });
+
+          modules[klass] = module;
         }
 
         return modules;
@@ -141,7 +142,6 @@
 
       // public
       instance = {
-        name: 'Lineman',
         router: router,
         history: [default_path],
         context: {
@@ -153,6 +153,7 @@
           globals: {},
           helpers: {},
 
+          // API
           send: function (partial, params) {
             var length,
                 index = 0;
@@ -165,6 +166,24 @@
             for (; index < length; index += 1) {
               partial[index].apply(instance.context, [params]);
             }
+          },
+
+          link: function (path, params, update) { return default_link(path, params, update); },
+
+          url: function (name, params) {
+            try {
+              return router.recognizer.generate(name, params);
+            } catch (exception) {
+              throw new Error('<' + name + '> route not found or missing params!');
+            }
+          },
+
+          go: function (path, params, update) {
+            url_params = link_params(path, params, update);
+
+            router.redirectURL(url_params.shift(), url_params.pop());
+
+            return this;
           }
         },
 
@@ -173,7 +192,7 @@
             throw new Error('<App#load> cannot run without modules!');
           }
 
-          return this.go(this.context.uri, false);
+          return this.context.go(this.context.uri, false);
         },
 
         load: function (modules) {
@@ -194,24 +213,6 @@
             module = modules[index];
             default_modules.push(module);
           }
-
-          return this;
-        },
-
-        link: function (path, params, update) { return default_link(path, params, update); },
-
-        url: function (name, params) {
-          try {
-            return router.recognizer.generate(name, params);
-          } catch (exception) {
-            throw new Error('<' + name + '> route not found or missing params!');
-          }
-        },
-
-        go: function (path, params, update) {
-          url_params = link_params(path, params, update);
-
-          router.redirectURL(url_params.shift(), url_params.pop());
 
           return this;
         }
