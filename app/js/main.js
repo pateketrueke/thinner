@@ -153,7 +153,6 @@
       // public
       instance = {
         router: router,
-        history: [default_path],
         context: {
           $: {}, // UI
 
@@ -240,7 +239,6 @@
 
       router.redirectURL = function(path, update) {
         if (false !== update) {
-          instance.history.push(path);
           router.updateURL(path);
           router.handleURL(path);
         } else {
