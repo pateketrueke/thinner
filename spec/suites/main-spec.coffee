@@ -37,21 +37,11 @@ describe 'Our application:', ->
         app.context.go '/hi/dude', off
         delay done, ->
           expect(get()).toEqual 'Hi dude!'
-          expect(app.history.length).toEqual 1
 
       async.it 'should display "testing" at /hi/new', (done) ->
         app.context.go '/hi/new', off
         delay done, ->
           expect(get()).toEqual 'new'
-          expect(app.history.length).toEqual 1
-
-      it 'should keep the history (?)', ->
-        app.context.go 'test'
-        app.context.go 'make'
-        app.context.go 'show', name: 'other'
-
-        expect(-> app.context.go 'x').toThrow()
-        expect(app.history).toEqual ['/', '/foo', '/hi/new', '/hi/other']
 
       describe 'By the way:', ->
 
@@ -76,13 +66,23 @@ describe 'Our application:', ->
             expect(@helpers.url_for 'make').toEqual '/hi/new'
             expect(@helpers.link_to('make').outerHTML).toEqual '<a href="/hi/new">make</a>'
 
-        describe 'Finally, our links:', ->
-          a = app.context.link 'make'
+        describe 'Our links:', ->
+          async = new AsyncSpec @
 
           it 'will be html-compliant', ->
             b = app.context.link 'make', innerHTML: 'Hello?'
             expect(b.outerHTML).toEqual '<a href="/hi/new">Hello?</a>'
 
-          it 'will trigger redirections', ->
+          async.it 'will trigger redirections', (done) ->
+            a = app.context.link 'make'
             a.click()
-            expect(app.history.length).toEqual 5
+
+            delay done, ->
+              expect(get()).toBeUndefined()
+
+        describe 'Modules:', ->
+          it 'can be listed', ->
+            keys = []
+            keys.push key for key, module of app.modules
+
+            expect(['Home', 'Other']).toEqual keys
