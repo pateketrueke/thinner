@@ -23,10 +23,15 @@ module.exports = lineman.config.extend "files",
       concatenatedDist: "dist/<%= pkg.name %>.js"
       minifiedDist: "dist/<%= pkg.name %>.min.js"
 
-    vendor:
+    test:
       files: [
         "vendor/components/jasmine.async/lib/jasmine.async.js"
         "vendor/components/blanket/dist/jasmine/blanket_jasmine.js"
+      ]
+      concatenated: "generated/js/test.js"
+
+    vendor:
+      files: [
         "vendor/components/route-recognizer/dist/route-recognizer.js"
         "vendor/components/rsvp.js/browser/rsvp.js"
         "vendor/components/router.js/dist/router.js"

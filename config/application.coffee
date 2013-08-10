@@ -79,22 +79,21 @@ application = lineman.config.extend "application",
       src: "<%= files.js.vendor.files %>"
       dest: "<%= files.js.vendor.concatenated %>"
 
+    test:
+      src: "<%= files.js.test.files %>"
+      dest: "<%= files.js.test.concatenated %>"
+
     app:
-      src: [
-        "<%= files.coffee.generated %>"
-        "<%= files.js.app.files %>"
-      ]
+      src: "<%= files.js.app.files %>"
       dest: "<%= files.js.app.concatenated %>"
 
   uglify:
     js:
-      src: ["<%= files.js.app.concatenated %>"]
+      src: "<%= files.js.app.concatenated %>"
       dest: "<%= files.js.app.minifiedDist %>"
 
   copy:
     dist:
-      options:
-        flatten: on
       files:
         "<%= files.js.app.concatenatedDist %>": "<%= files.js.app.concatenated %>"
 
