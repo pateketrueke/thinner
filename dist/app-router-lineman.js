@@ -7,7 +7,7 @@
       var exception, instance, matcher, loader, router,
           default_path = path || document.location.pathname || '/',
           default_context = context || document.body,
-          default_modules = [],
+          default_binding,
           default_mixin,
           default_link,
           link_params,
@@ -17,6 +17,25 @@
 
       // router.js
       router = new Router();
+
+
+      // context
+      default_binding = function (self, mixin) {
+        var key,
+            out = {};
+
+        if ('function' === typeof mixin) {
+          return function () {
+            return mixin.apply(self, arguments);
+          };
+        }
+
+        for (key in mixin) {
+          out[key] = default_binding(self, mixin[key]);
+        }
+
+        return out;
+      };
 
 
       // models
@@ -86,7 +105,6 @@
       matcher = function (routes) {
         var key,
             self,
-            result,
             handler,
             handlers = {};
 
@@ -98,30 +116,21 @@
 
         for (key in handlers) {
           handler = handlers[key];
-
           this[key] = typeof handler === 'function' ? { setup: handler } : handler;
-          this[key].events = (result = this[key].events || null) !== null ? result : {};
-
-          router.handlers[key] = this[key];
 
           if (! ('model' in this[key])) {
             this[key].model = default_mixin;
           }
+
+          router.handlers[key] = default_binding(instance.context, this[key]);
         }
       };
 
 
       // methods
       loader = function (modules) {
-        var binding,
-            module,
+        var module,
             klass;
-
-        binding = function (self, mixin) {
-          return function (routes) {
-            return mixin.apply(self, [routes]);
-          };
-        };
 
         for (module in modules) {
           if (! isNaN(parseInt(module, 10))) {
@@ -141,7 +150,7 @@
             throw new Error('<' + klass + '#initialize_module> is missing!');
           }
 
-          instance.context.send(module.initialize_module, { draw: binding(module, matcher) });
+          instance.context.send(module.initialize_module, { draw: default_binding(module, matcher) });
 
           modules[klass] = module;
         }
@@ -153,7 +162,7 @@
       // public
       instance = {
         router: router,
-        history: [default_path],
+        modules: {},
         context: {
           $: {}, // UI
 
@@ -196,7 +205,7 @@
         },
 
         run: function () {
-          if (! default_modules || 0 === default_modules.length) {
+          if (! this.modules || 0 === this.modules.length) {
             throw new Error('<App#load> cannot run without modules!');
           }
 
@@ -218,8 +227,10 @@
           modules = loader(modules);
 
           for (index in modules) {
-            module = modules[index];
-            default_modules.push(module);
+            if (! this.modules[index] && 'object' === typeof modules[index]) {
+              module = modules[index];
+              this.modules[index] = module;
+            }
           }
 
           return this;
@@ -240,7 +251,6 @@
 
       router.redirectURL = function(path, update) {
         if (false !== update) {
-          instance.history.push(path);
           router.updateURL(path);
           router.handleURL(path);
         } else {
@@ -267,4 +277,4 @@
     return list;
   };
 
-})(this);
+})(window || this);
