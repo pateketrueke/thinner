@@ -7,6 +7,7 @@
       var exception, instance, matcher, loader, router,
           default_path = path || document.location.pathname || '/',
           default_context = context || document.body,
+          default_binding,
           default_mixin,
           default_link,
           link_params,
@@ -16,6 +17,14 @@
 
       // router.js
       router = new Router();
+
+
+      // context
+      default_binding = function (self, mixin) {
+        return function () {
+          return mixin.apply(self, arguments);
+        };
+      };
 
 
       // models
@@ -86,6 +95,7 @@
         var key,
             self,
             result,
+            subkey,
             handler,
             handlers = {};
 
@@ -97,14 +107,18 @@
 
         for (key in handlers) {
           handler = handlers[key];
-
           this[key] = typeof handler === 'function' ? { setup: handler } : handler;
-          this[key].events = (result = this[key].events || null) !== null ? result : {};
-
-          router.handlers[key] = this[key];
 
           if (! ('model' in this[key])) {
             this[key].model = default_mixin;
+          }
+
+          router.handlers[key] = {};
+
+          for (subkey in this[key]) {
+            if ('function' === typeof this[key][subkey]) {
+              router.handlers[key][subkey] = default_binding(instance.context, this[key][subkey]);
+            }
           }
         }
       };
@@ -112,15 +126,8 @@
 
       // methods
       loader = function (modules) {
-        var binding,
-            module,
+        var module,
             klass;
-
-        binding = function (self, mixin) {
-          return function (routes) {
-            return mixin.apply(self, [routes]);
-          };
-        };
 
         for (module in modules) {
           if (! isNaN(parseInt(module, 10))) {
@@ -140,7 +147,7 @@
             throw new Error('<' + klass + '#initialize_module> is missing!');
           }
 
-          instance.context.send(module.initialize_module, { draw: binding(module, matcher) });
+          instance.context.send(module.initialize_module, { draw: default_binding(module, matcher) });
 
           modules[klass] = module;
         }
