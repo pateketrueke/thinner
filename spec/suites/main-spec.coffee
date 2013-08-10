@@ -73,8 +73,6 @@ describe 'Our application:', ->
             expect(@helpers.link_to('make').outerHTML).toEqual '<a href="/hi/new">make</a>'
 
         describe 'Our links:', ->
-          async = new AsyncSpec @
-
           it 'will be html-compliant', ->
             b = app.context.link 'make', innerHTML: 'Hello?'
             expect(b.outerHTML).toEqual '<a href="/hi/new">Hello?</a>'
