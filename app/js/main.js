@@ -21,9 +21,20 @@
 
       // context
       default_binding = function (self, mixin) {
-        return function () {
-          return mixin.apply(self, arguments);
-        };
+        var key,
+            out = {};
+
+        if ('function' === typeof mixin) {
+          return function () {
+            return mixin.apply(self, arguments);
+          };
+        }
+
+        for (key in mixin) {
+          out[key] = default_binding(self, mixin[key]);
+        }
+
+        return out;
       };
 
 
@@ -94,8 +105,6 @@
       matcher = function (routes) {
         var key,
             self,
-            result,
-            subkey,
             handler,
             handlers = {};
 
@@ -113,13 +122,7 @@
             this[key].model = default_mixin;
           }
 
-          router.handlers[key] = {};
-
-          for (subkey in this[key]) {
-            if ('function' === typeof this[key][subkey]) {
-              router.handlers[key][subkey] = default_binding(instance.context, this[key][subkey]);
-            }
-          }
+          router.handlers[key] = default_binding(instance.context, this[key]);
         }
       };
 
