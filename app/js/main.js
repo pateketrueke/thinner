@@ -277,4 +277,4 @@
     return list;
   };
 
-})(this);
+})(window || this);
