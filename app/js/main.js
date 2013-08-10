@@ -7,7 +7,6 @@
       var exception, instance, matcher, loader, router,
           default_path = path || document.location.pathname || '/',
           default_context = context || document.body,
-          default_modules = [],
           default_mixin,
           default_link,
           link_params,
@@ -153,6 +152,7 @@
       // public
       instance = {
         router: router,
+        modules: {},
         context: {
           $: {}, // UI
 
@@ -195,7 +195,7 @@
         },
 
         run: function () {
-          if (! default_modules || 0 === default_modules.length) {
+          if (! this.modules || 0 === this.modules.length) {
             throw new Error('<App#load> cannot run without modules!');
           }
 
@@ -217,8 +217,10 @@
           modules = loader(modules);
 
           for (index in modules) {
-            module = modules[index];
-            default_modules.push(module);
+            if (! this.modules[index] && 'object' === typeof modules[index]) {
+              module = modules[index];
+              this.modules[index] = module;
+            }
           }
 
           return this;
