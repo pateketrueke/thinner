@@ -43,6 +43,12 @@ describe 'Our application:', ->
         delay done, ->
           expect(get()).toEqual 'new'
 
+      async.it 'should trigger some events', (done) ->
+        app.context.go 'home'
+        delay done, ->
+          app.router.trigger 'testEvent'
+          expect(get()).toEqual 'testing'
+
       describe 'By the way:', ->
 
         it 'can build our application routes', ->
@@ -78,7 +84,7 @@ describe 'Our application:', ->
             a.click()
 
             delay done, ->
-              expect(get()).toBeUndefined()
+              expect(get()).toEqual 'new'
 
         describe 'Modules:', ->
           it 'can be listed', ->
