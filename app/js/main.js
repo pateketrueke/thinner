@@ -73,7 +73,7 @@
       };
 
       popstate = function (e) {
-        if (e.state.to) {
+        if (e.state && e.state.to) {
           instance.context.go(e.state.to, false);
         }
       };
