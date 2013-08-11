@@ -8,15 +8,15 @@
 
 # lineman-lib-template config options:
 
-includeVendorInDistribution = false #set to true if you want your distribution to contain JS files in vendor/js
+includeVendorInDistribution = true #set to true if you want your distribution to contain JS files in vendor/js
 
 lineman = require(process.env["LINEMAN_MAIN"])
 grunt = lineman.grunt
 _ = grunt.util._
+
 application = lineman.config.extend "application",
 
   loadNpmTasks: [
-    "grunt-contrib-copy"
     "grunt-bower-task"
     "grunt-blanket"
   ]
@@ -25,24 +25,25 @@ application = lineman.config.extend "application",
     common: ["bower:install"]
 
   appendTasks:
-    dist: ["copy"]
+    dist: ["concat:dist"]
+    common: ["concat:vendor", "concat:test", "concat:app"]
 
   removeTasks:
-    common: ["less", "handlebars", "jst", "images:dev", "webfonts:dev", "pages:dev"]
+    common: ["less", "handlebars", "jst", "images:dev", "webfonts:dev", "pages:dev", "concat"]
     dev: ["server"]
     dist: ["cssmin", "images:dist", "webfonts:dist", "pages:dist"]
 
 
   watch:
     coffee:
-      tasks: ["coffee", "concat"]
+      tasks: ["coffee"]
 
     lint:
       files: ["<%= files.js.app.files %>"]
 
     js:
-      files: ["<%= files.js.vendor.files %>", "<%= files.js.app.files %>"]
-      tasks: ["concat"]
+      files: ["<%= files.js.app.files %>"]
+      tasks: ["concat:app"]
 
   clean:
     js:
@@ -83,19 +84,21 @@ application = lineman.config.extend "application",
       src: "<%= files.js.test.files %>"
       dest: "<%= files.js.test.concatenated %>"
 
+    dist:
+      src: _([
+              ("<%= files.js.vendor.concatenated %>" if includeVendorInDistribution)
+              "<%= files.js.app.concatenated %>"
+            ]).compact()
+      dest: "<%= files.js.app.concatenatedDist %>"
+
     app:
       src: "<%= files.js.app.files %>"
       dest: "<%= files.js.app.concatenated %>"
 
   uglify:
     js:
-      src: "<%= files.js.app.concatenated %>"
+      src: "<%= files.js.app.concatenatedDist %>"
       dest: "<%= files.js.app.minifiedDist %>"
-
-  copy:
-    dist:
-      files:
-        "<%= files.js.app.concatenatedDist %>": "<%= files.js.app.concatenated %>"
 
 
 delete application.concat.css
