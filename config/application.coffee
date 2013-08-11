@@ -14,8 +14,7 @@ lineman = require(process.env["LINEMAN_MAIN"])
 grunt = lineman.grunt
 _ = grunt.util._
 
-application = lineman.config.extend "application",
-
+module.exports = lineman.config.extend "application",
   loadNpmTasks: [
     "grunt-bower-task"
     "grunt-blanket"
@@ -32,7 +31,6 @@ application = lineman.config.extend "application",
     common: ["less", "handlebars", "jst", "images:dev", "webfonts:dev", "pages:dev", "concat"]
     dev: ["server"]
     dist: ["cssmin", "images:dist", "webfonts:dist", "pages:dist"]
-
 
   watch:
     coffee:
@@ -99,9 +97,3 @@ application = lineman.config.extend "application",
     js:
       src: "<%= files.js.app.concatenatedDist %>"
       dest: "<%= files.js.app.minifiedDist %>"
-
-
-delete application.concat.css
-delete application.concat.js
-
-module.exports = application
