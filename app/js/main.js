@@ -2,18 +2,58 @@
   'use strict';
 
   var App = (function (undefined) {
-    return function (context, path) {
+    return function (path) {
       // private
       var exception, instance, matcher, loader, router,
-          default_path = path || document.location.pathname || '/',
-          default_context = context || document.body,
+          default_path = path || '/',
           default_binding,
           default_mixin,
           default_link,
           link_params,
           url_params,
           redirect,
-          popstate;
+          popstate,
+          cache = {}, elem, doc;
+
+
+      // document
+      doc = global.document || null;
+
+
+      // DOM
+      elem = function (input) {
+        var output,
+            matches,
+            expr = /^\.(\w+)$/;
+
+        if (doc && input) {
+          if (input.nodeType) {
+            return input;
+          } else if ('string' === typeof input) {
+            output = doc.getElementById(input);
+
+            if (! output) {
+              if (input.charAt(0) === '.') {
+                output = doc.getElementsByClassName(input.substr(1).replace(/\./g, ' '));
+              } else if (input in doc) {
+                output = doc[input];
+              } else if (! /[ +~>:,.[(]/.test(input)) {
+                if (input.charAt(0) === '#') {
+                  output = doc.getElementById(input.substr(1));
+                } else {
+                  output = doc.getElementsByTagName(input);
+                }
+              } else if (doc.querySelectorAll) {
+                output = doc.querySelectorAll(input);
+              }
+            }
+
+            return output;
+          } else if (input[0] && input[0].nodeType) {
+            return input[0];
+          }
+        }
+      };
 
 
       // router.js
@@ -171,14 +211,23 @@
         router: router,
         modules: {},
         context: {
-          $: {}, // UI
-
           // locals
-          el: default_context,
           globals: {},
           helpers: {},
 
           // API
+          find: function (selector, cached) {
+            if ('string' === typeof selector) {
+              if (false !== cached && null != cache[selector]) {
+                return cache[selector];
+              }
+
+              return cache[selector] = elem(selector) || null;
+            }
+
+            return elem(selector);
+          },
+
           send: function (partial, params) {
             var length,
                 index = 0;
