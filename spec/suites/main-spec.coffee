@@ -58,9 +58,10 @@ describe 'Our application:', ->
       describe 'By the way:', ->
 
         it 'we can add HTML-elements', ->
-          element.id = 'main'
-          element.style.display = 'none'
-          element.innerHTML = """
+          main = element 'main'
+          main.id = 'main'
+          main.style.display = 'none'
+          main.innerHTML = """
             <fieldset id="group">
               <legend>Samples</legend>
               <label data-extra-attribute></label>
@@ -69,7 +70,7 @@ describe 'Our application:', ->
             </fieldset>
           """
 
-          app.context.find('body').appendChild element
+          app.context.find('body').appendChild main
 
         it 'we can find() HTML-elements', ->
           samples =
