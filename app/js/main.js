@@ -12,7 +12,8 @@
           default_link,
           link_params,
           url_params,
-          redirect;
+          redirect,
+          popstate;
 
 
       // router.js
@@ -69,6 +70,12 @@
 
           return false;
         };
+      };
+
+      popstate = function (e) {
+        if (e.state.to) {
+          instance.context.go(e.state.to, false);
+        }
       };
 
 
@@ -168,7 +175,6 @@
 
           // locals
           el: default_context,
-          uri: default_path,
           globals: {},
           helpers: {},
 
@@ -209,7 +215,7 @@
             throw new Error('<App#load> cannot run without modules!');
           }
 
-          return this.context.go(this.context.uri, false);
+          return this.context.go(default_path, false);
         },
 
         load: function (modules) {
@@ -242,7 +248,7 @@
       router.handlers = {};
 
       router.updateURL = function(path) {
-        history.pushState({}, instance.title, path);
+        root.history.pushState({ to: path }, null, path);
       };
 
       router.getHandler = function(name) {
@@ -257,6 +263,13 @@
           router.handleURL(path);
         }
       };
+
+
+      if (root.addEventListener) {
+        root.addEventListener('popstate', popstate);
+      } else {
+        root.onpopstate = popstate;
+      }
 
       return instance;
     };
