@@ -24,13 +24,13 @@ module.exports = lineman.config.extend "application",
     common: ["bower:install"]
 
   appendTasks:
-    dist: ["concat:dist"]
+    dist: ["concat:dist", "uglify:js"]
     common: ["concat:vendor", "concat:test", "concat:app"]
 
   removeTasks:
     common: ["less", "handlebars", "jst", "images:dev", "webfonts:dev", "pages:dev", "concat"]
     dev: ["server"]
-    dist: ["cssmin", "images:dist", "webfonts:dist", "pages:dist"]
+    dist: ["cssmin", "images:dist", "webfonts:dist", "pages:dist", "uglify"]
 
   watch:
     coffee:
