@@ -30,13 +30,11 @@
           if (input.nodeType) {
             return input;
           } else if ('string' === typeof input) {
-            output = doc.getElementById(input);
+            output = doc.getElementById(input) || doc[input];
 
             if (! output) {
               if (input.charAt(0) === '.') {
                 output = doc.getElementsByClassName(input.substr(1).replace(/\./g, ' '));
-              } else if (input in doc) {
-                output = doc[input];
               } else if (! /[ +~>:,.[(]/.test(input)) {
                 if (input.charAt(0) === '#') {
                   output = doc.getElementById(input.substr(1));
