@@ -1,13 +1,13 @@
 describe 'Our application:', ->
 
   it 'will never happen without router.js', ->
-    expect(-> new App(null, '/')).not.toThrow()
+    expect(-> new App).not.toThrow()
 
   describe 'Well.. when it runs,', ->
-    app = new App null, '/'
+    app = new App
 
     it 'will do not without modules', ->
-      expect(new App(null, '/').run).toThrow()
+      expect((new App).run).toThrow()
 
     it 'will expose registered modules', ->
       expect(App.modules()).toEqual { 'Sample': App.Sample }
@@ -22,7 +22,7 @@ describe 'Our application:', ->
       expect(-> app.load ['Irregular value']).toThrow()
 
     it 'will not run over invalid routes', ->
-      expect(new App(null, '/x/y/z').load(Other).run).toThrow()
+      expect(new App('/x/y/z').load(Other).run).toThrow()
 
     describe 'Looking at routes:', ->
       async = new AsyncSpec @
@@ -43,7 +43,7 @@ describe 'Our application:', ->
         delay done, ->
           expect(get()).toEqual 'new'
 
-      async.it 'should trigger some events', (done) ->
+      async.it 'should trigger some events, i.e. "testEvent"', (done) ->
         app.context.go 'home'
         delay done, ->
           app.router.trigger 'testEvent'
@@ -51,18 +51,28 @@ describe 'Our application:', ->
 
       describe 'By the way:', ->
 
-        it 'can build our application routes', ->
+        async.it 'we can find() HTML-elements through the DOM', (done) ->
+          delay done, ->
+            expect(app.context.find 'body').toEqual document.body
+
+        it 'we know which modules are loaded with app.modules', ->
+          keys = []
+          keys.push key for key, module of app.modules
+
+          expect(['Home', 'Other']).toEqual keys
+
+        it 'we can build our application routes with url()', ->
           expect(-> app.context.url 'show').toThrow()
           expect(app.context.url 'make').toEqual '/hi/new'
           expect(app.context.url('show', { name: 'foo' })).toEqual '/hi/foo'
 
-        it 'can use send() as context mixin (?)', ->
+        it 'we can use send() as context mixin (?)', ->
           app.context.globals.foo = 'bar'
           app.context.send ->
             expect(@globals.foo).toEqual 'bar'
             expect(@globals.bar).toBeUndefined()
 
-        it 'can expose useful functions as helpers', ->
+        it 'we can expose useful functions as helpers', ->
           app.context.helpers.foo = -> 'bar'
           app.context.helpers.url_for = -> app.context.url arguments...
           app.context.helpers.link_to = -> app.context.link arguments...
@@ -72,7 +82,7 @@ describe 'Our application:', ->
             expect(@helpers.url_for 'make').toEqual '/hi/new'
             expect(@helpers.link_to('make').outerHTML).toEqual '<a href="/hi/new">make</a>'
 
-        describe 'Our links:', ->
+        describe 'And our links:', ->
           it 'will be html-compliant', ->
             b = app.context.link 'make', innerHTML: 'Hello?'
             expect(b.outerHTML).toEqual '<a href="/hi/new">Hello?</a>'
@@ -83,10 +93,3 @@ describe 'Our application:', ->
 
             delay done, ->
               expect(get()).toEqual 'new'
-
-        describe 'Modules:', ->
-          it 'can be listed', ->
-            keys = []
-            keys.push key for key, module of app.modules
-
-            expect(['Home', 'Other']).toEqual keys
