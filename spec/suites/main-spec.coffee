@@ -21,6 +21,12 @@ describe 'Our application:', ->
       expect(-> app.load App.modules()).toThrow()
       expect(-> app.load ['Irregular value']).toThrow()
 
+    it 'will show which module are loaded', ->
+      keys = []
+      keys.push key for key, module of app.modules
+
+      expect(['Home', 'Other']).toEqual keys
+
     it 'will not run over invalid routes', ->
       expect(new App('/x/y/z').load(Other).run).toThrow()
 
@@ -51,15 +57,52 @@ describe 'Our application:', ->
 
       describe 'By the way:', ->
 
-        async.it 'we can find() HTML-elements through the DOM', (done) ->
-          delay done, ->
-            expect(app.context.find 'body').toEqual document.body
+        it 'we can add HTML-elements', ->
+          element.id = 'main'
+          element.style.display = 'none'
+          element.innerHTML = """
+            <fieldset id="group">
+              <legend>Samples</legend>
+              <label data-extra-attribute></label>
+              <span data-extra-attribute></span>
+              <i class="icon-gear icon-spin"></i>
+            </fieldset>
+          """
 
-        it 'we know which modules are loaded with app.modules', ->
-          keys = []
-          keys.push key for key, module of app.modules
+          app.context.find('body').appendChild element
 
-          expect(['Home', 'Other']).toEqual keys
+        it 'we can find() HTML-elements', ->
+          samples =
+            'group': '<fieldset'
+            '#group': '<fieldset'
+            '#group legend ~ i ': '<i'
+            'legend ~ i ': '<i'
+            'fieldset': '<fieldset'
+            'fieldset legend': '<legend'
+            'fieldset > legend': '<legend'
+            '.icon-gear.icon-spin': '<i'
+            '.icon-spin': '<i'
+
+          for sample, tag of samples
+            el = app.context.find sample
+            html = String el.outerHTML or el[0]?.outerHTML
+            test = html.substr 0, tag.length
+
+            expect(test).toEqual tag
+
+          expect(app.context.find([app.context.find 'body']).tagName).toEqual 'BODY'
+          expect(app.context.find(app.context.find 'body').tagName).toEqual 'BODY'
+          expect(app.context.find 'body').toEqual document.body
+
+        it 'we can remove HTML-elements also', ->
+          sample = app.context.find 'main'
+          sample.parentNode.removeChild sample
+
+          cached = app.context.find 'main'
+          uncached = app.context.find 'main', false
+
+          expect(cached).toEqual sample
+          expect(uncached).not.toEqual sample
 
         it 'we can build our application routes with url()', ->
           expect(-> app.context.url 'show').toThrow()
