@@ -23,8 +23,7 @@
       // DOM
       elem = function (input) {
         var output,
-            matches,
-            expr = /^\.(\w+)$/;
+            matches;
 
         if (doc && input) {
           if (input.nodeType) {
