@@ -1,7 +1,7 @@
-(function (root) {
+(function (global) {
   'use strict';
 
-  root.App = (function (undefined) {
+  var App = (function (undefined) {
     return function (context, path) {
       // private
       var exception, instance, matcher, loader, router,
@@ -248,7 +248,7 @@
       router.handlers = {};
 
       router.updateURL = function(path) {
-        root.history.pushState({ to: path }, null, path);
+        global.history.pushState({ to: path }, null, path);
       };
 
       router.getHandler = function(name) {
@@ -265,10 +265,10 @@
       };
 
 
-      if (root.addEventListener) {
-        root.addEventListener('popstate', popstate);
+      if (global.addEventListener) {
+        global.addEventListener('popstate', popstate);
       } else {
-        root.onpopstate = popstate;
+        global.onpopstate = popstate;
       }
 
       return instance;
@@ -277,17 +277,27 @@
 
 
   // helpers (?)
-  root.App.modules = function () {
+  App.modules = function () {
     var module,
         list = {};
 
-    for (module in root.App) {
+    for (module in App) {
       if (module.charAt(0) === module.charAt(0).toUpperCase()) {
-        list[module] = root.App[module];
+        list[module] = App[module];
       }
     }
 
     return list;
   };
+
+
+  // export
+  if ('undefined' !== typeof module && module.exports) {
+    module.exports = App;
+  } else if ('function' === typeof define && define.amd) {
+    define(function () { return App; });
+  } else {
+    global.App = App;
+  }
 
 })(window || this);
