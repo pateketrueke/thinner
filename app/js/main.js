@@ -128,7 +128,7 @@
 
       // UJS
       default_link = function (path, params) {
-        var a = document.createElement('a'),
+        var a = doc.createElement('a'),
             attribute,
             href;
 
