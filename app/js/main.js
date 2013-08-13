@@ -2,7 +2,7 @@
   'use strict';
 
   var App = (function (undefined) {
-    return function (path) {
+    return function (context, path) {
       // private
       var exception, instance, matcher, loader, router,
           default_path = path || '/',
@@ -16,8 +16,14 @@
           cache = {}, elem, doc;
 
 
+      if ('string' === typeof context) {
+        default_path = context;
+        context = null;
+      }
+
+
       // document
-      doc = global.document || null;
+      doc = context || global.document || null;
 
 
       // DOM
