@@ -62,7 +62,7 @@
         if (doc && input) {
           if (input.nodeType) {
             return input;
-          } else if ('string' === typeof input) {
+          } else if (doc.getElementById && 'string' === typeof input) {
             output = doc.getElementById(input) || doc[input];
 
             if (! output) {
@@ -127,7 +127,7 @@
 
       // UJS
       default_link = function (path, params) {
-        var a = doc.createElement('a'),
+        var a = doc.createElement ? doc.createElement('a') : null,
             attribute,
             href;
 
@@ -303,7 +303,9 @@
       router.handlers = {};
 
       router.updateURL = function(path) {
-        global.history.pushState({ to: path }, null, path);
+        if (global.history && global.history.pushState) {
+          global.history.pushState({ to: path }, null, path);
+        }
       };
 
       router.getHandler = function(name) {
