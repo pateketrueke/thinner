@@ -22,6 +22,8 @@ describe 'Our application:', ->
       expect(-> app.load ['Irregular value']).toThrow()
 
     it 'will show which module are loaded', ->
+      app.load [Home, Other]
+
       keys = []
       keys.push key for key, module of app.modules
 

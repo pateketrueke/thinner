@@ -28,7 +28,7 @@ module.exports = lineman.config.extend "files",
         "vendor/components/jasmine.async/lib/jasmine.async.js"
         "vendor/components/blanket/dist/jasmine/blanket_jasmine.js"
       ]
-      concatenated: "generated/js/testem.js"
+      concatenated: "generated/js/testm.js"
 
     vendor:
       files: [
