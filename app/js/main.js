@@ -2,12 +2,39 @@
   'use strict';
 
   var App = (function (undefined) {
+
+    // static
+    var class_regex = /^\.[\w.]+$/,
+        mixed_regex = /[ +~>:,.[(]/;
+
+
+    // context
+    var default_binding = function (self, mixin) {
+      var key,
+          out = {};
+
+      if ('function' === typeof mixin) {
+        return function () {
+          return mixin.apply(self, arguments);
+        };
+      }
+
+      for (key in mixin) {
+        out[key] = default_binding(self, mixin[key]);
+      }
+
+      return out;
+    };
+
+
+    // models
+    var default_mixin = function (params) { return params; };
+
+
     return function (context, path) {
       // private
       var exception, instance, matcher, loader, router,
           default_path = path || '/',
-          default_binding,
-          default_mixin,
           default_link,
           link_params,
           url_params,
@@ -38,9 +65,9 @@
             output = doc.getElementById(input) || doc[input];
 
             if (! output) {
-              if (input.charAt(0) === '.') {
+              if (class_regex.test(input)) {
                 output = doc.getElementsByClassName(input.substr(1).replace(/\./g, ' '));
-              } else if (! /[ +~>:,.[(]/.test(input)) {
+              } else if (! mixed_regex.test(input)) {
                 if (input.charAt(0) === '#') {
                   output = doc.getElementById(input.substr(1));
                 } else {
@@ -61,29 +88,6 @@
 
       // router.js
       router = new Router();
-
-
-      // context
-      default_binding = function (self, mixin) {
-        var key,
-            out = {};
-
-        if ('function' === typeof mixin) {
-          return function () {
-            return mixin.apply(self, arguments);
-          };
-        }
-
-        for (key in mixin) {
-          out[key] = default_binding(self, mixin[key]);
-        }
-
-        return out;
-      };
-
-
-      // models
-      default_mixin = function (params) { return params; };
 
 
       // links
