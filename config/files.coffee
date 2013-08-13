@@ -32,7 +32,6 @@ module.exports = lineman.config.extend "files",
 
     vendor:
       files: [
-        "vendor/components/ractive/build/Ractive.runtime.js"
         "vendor/components/route-recognizer/dist/route-recognizer.js"
         "vendor/components/rsvp.js/browser/rsvp.js"
         "vendor/components/router.js/dist/router.js"
