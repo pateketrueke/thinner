@@ -4,8 +4,9 @@
   var App = (function (undefined) {
 
     // static
-    var class_regex = /^\.[\w.]+$/,
-        mixed_regex = /[ +~>:,.[(]/;
+    var class_regex = /^\.[-\w.]+$/,
+        tag_regex = /^[a-zA-Z]{1, 10}$/,
+        id_regex = /^#[-\w]+$/;
 
 
     // context
@@ -67,12 +68,10 @@
             if (! output) {
               if (class_regex.test(input)) {
                 output = doc.getElementsByClassName(input.substr(1).replace(/\./g, ' '));
-              } else if (! mixed_regex.test(input)) {
-                if (input.charAt(0) === '#') {
-                  output = doc.getElementById(input.substr(1));
-                } else {
-                  output = doc.getElementsByTagName(input);
-                }
+              } else if (tag_regex.test(input)) {
+                output = doc.getElementsByTagName(input);
+              } else if (id_regex.test(input)) {
+                output = doc.getElementById(input.substr(1));
               } else if (doc.querySelectorAll) {
                 output = doc.querySelectorAll(input);
               }
