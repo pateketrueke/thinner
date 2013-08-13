@@ -25,7 +25,7 @@ module.exports = lineman.config.extend "application",
 
   appendTasks:
     dist: ["concat:dist", "uglify:js"]
-    common: ["concat:vendor", "concat:test", "concat:app"]
+    common: ["concat:vendor", "concat:testm", "concat:spec", "concat:app"]
 
   removeTasks:
     common: ["less", "handlebars", "jst", "images:dev", "webfonts:dev", "pages:dev", "concat"]
@@ -78,9 +78,9 @@ module.exports = lineman.config.extend "application",
       src: "<%= files.js.vendor.files %>"
       dest: "<%= files.js.vendor.concatenated %>"
 
-    test:
-      src: "<%= files.js.test.files %>"
-      dest: "<%= files.js.test.concatenated %>"
+    testm:
+      src: "<%= files.js.testm.files %>"
+      dest: "<%= files.js.testm.concatenated %>"
 
     dist:
       src: _([
