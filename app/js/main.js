@@ -5,9 +5,9 @@
 
     // static
     var default_binding, default_mixin, default_elem, make_elem,
-        class_regex = /^\.[-\w.]+$/,
-        tag_regex = /^[a-zA-Z]{1, 10}$/,
-        id_regex = /^#[-\w]+$/;
+        class_regex = /^\.-?[_a-zA-Z]+[\w.-]*$/,
+        tag_regex = /^[a-zA-Z][a-zA-Z]*$/,
+        id_regex = /^#[a-zA-Z][\w-]*$/;
 
 
     // context
