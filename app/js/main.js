@@ -43,8 +43,12 @@
         } else if (input[0] && input[0].nodeType) {
           output = input[0];
         }
-      } else if (doc.getElementById && 'string' === typeof input) {
-        output = doc.getElementById(input) || doc[input];
+      } else if ('string' === typeof input) {
+        if (doc[input]) {
+          output = doc[input];
+        } else if (doc.getElementById) {
+          output = doc.getElementById(input);
+        }
 
         if (! output) {
           if (class_regex.test(input)) {
