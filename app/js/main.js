@@ -1,16 +1,17 @@
-(function (global) {
+(function (global, doc) {
   'use strict';
 
   var App = (function (undefined) {
 
     // static
-    var class_regex = /^\.[-\w.]+$/,
+    var default_binding, default_mixin, default_elem, make_elem,
+        class_regex = /^\.[-\w.]+$/,
         tag_regex = /^[a-zA-Z]{1, 10}$/,
         id_regex = /^#[-\w]+$/;
 
 
     // context
-    var default_binding = function (self, mixin) {
+    default_binding = function (self, mixin) {
       var key,
           out = {};
 
@@ -29,10 +30,43 @@
 
 
     // models
-    var default_mixin = function (params) { return params; };
+    default_mixin = function (params) { return params; };
 
 
-    return function (context, path) {
+    // DOM
+    default_elem = function (input) {
+      var output;
+
+      if (input && input.nodeType) {
+        output = input;
+      } else if (doc.getElementById && 'string' === typeof input) {
+        output = doc.getElementById(input) || doc[input];
+
+        if (! output) {
+          if (class_regex.test(input)) {
+            output = doc.getElementsByClassName(input.substr(1).replace(/\./g, ' '));
+          } else if (tag_regex.test(input)) {
+            output = doc.getElementsByTagName(input);
+          } else if (id_regex.test(input)) {
+            output = doc.getElementById(input.substr(1));
+          } else if (doc.querySelectorAll) {
+            output = doc.querySelectorAll(input);
+          }
+        }
+      } else if (input[0] && input[0].nodeType) {
+        output = input[0];
+      }
+
+      return output;
+    };
+
+    make_elem = function (tag) {
+      return doc.createElement && doc.createElement(tag);
+    };
+
+
+    // instance
+    return function (path) {
       // private
       var exception, instance, matcher, loader, router,
           default_path = path || '/',
@@ -41,48 +75,7 @@
           url_params,
           redirect,
           popstate,
-          cache = {}, elem, doc;
-
-
-      if ('string' === typeof context) {
-        default_path = context;
-        context = null;
-      }
-
-
-      // document
-      doc = context || global.document || null;
-
-
-      // DOM
-      elem = function (input) {
-        var output,
-            matches;
-
-        if (doc && input) {
-          if (input.nodeType) {
-            return input;
-          } else if (doc.getElementById && 'string' === typeof input) {
-            output = doc.getElementById(input) || doc[input];
-
-            if (! output) {
-              if (class_regex.test(input)) {
-                output = doc.getElementsByClassName(input.substr(1).replace(/\./g, ' '));
-              } else if (tag_regex.test(input)) {
-                output = doc.getElementsByTagName(input);
-              } else if (id_regex.test(input)) {
-                output = doc.getElementById(input.substr(1));
-              } else if (doc.querySelectorAll) {
-                output = doc.querySelectorAll(input);
-              }
-            }
-
-            return output;
-          } else if (input[0] && input[0].nodeType) {
-            return input[0];
-          }
-        }
-      };
+          cache = {};
 
 
       // router.js
@@ -127,7 +120,7 @@
 
       // UJS
       default_link = function (path, params) {
-        var a = doc.createElement ? doc.createElement('a') : null,
+        var a = make_elem('a'),
             attribute,
             href;
 
@@ -228,10 +221,10 @@
                 return cache[selector];
               }
 
-              return cache[selector] = elem(selector) || null;
+              return cache[selector] = default_elem(selector) || null;
             }
 
-            return elem(selector);
+            return default_elem(selector);
           },
 
           send: function (partial, params) {
@@ -357,4 +350,4 @@
     global.App = App;
   }
 
-})(window || this);
+})(window, document);
