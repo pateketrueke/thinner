@@ -37,8 +37,12 @@
     default_elem = function (input) {
       var output;
 
-      if (input && input.nodeType) {
-        output = input;
+      if ('object' === typeof input) {
+        if (input.nodeType) {
+          output = input;
+        } else if (input[0] && input[0].nodeType) {
+          output = input[0];
+        }
       } else if (doc.getElementById && 'string' === typeof input) {
         output = doc.getElementById(input) || doc[input];
 
@@ -49,12 +53,10 @@
             output = doc.getElementsByTagName(input);
           } else if (id_regex.test(input)) {
             output = doc.getElementById(input.substr(1));
-          } else if (doc.querySelectorAll) {
+          } else {
             output = doc.querySelectorAll(input);
           }
         }
-      } else if (input[0] && input[0].nodeType) {
-        output = input[0];
       }
 
       return output;
