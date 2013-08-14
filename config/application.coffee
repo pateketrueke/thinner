@@ -8,7 +8,7 @@
 
 # lineman-lib-template config options:
 
-includeVendorInDistribution = true #set to true if you want your distribution to contain JS files in vendor/js
+includeVendorInDistribution = false #set to true if you want your distribution to contain JS files in vendor/js
 
 lineman = require(process.env["LINEMAN_MAIN"])
 grunt = lineman.grunt
