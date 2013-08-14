@@ -88,7 +88,7 @@ describe 'Our application:', ->
 
           for sample, tag of samples
             el = app.context.find sample
-            html = String el.outerHTML or el[0]?.outerHTML
+            html = String if el.length then el[0].outerHTML else el.outerHTML
             test = html.substr 0, tag.length
 
             expect(test).toEqual tag
