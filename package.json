@@ -1,8 +1,8 @@
 {
-  "name": "app-router-lineman",
-  "version": "0.3.0",
+  "name": "Mohawk",
+  "version": "0.3.1",
   "description": "Application wrapper built-in on top of router.js",
-  "homepage": "https://github.com/pateketrueke/app-router-lineman",
+  "homepage": "https://github.com/pateketrueke/mohawk",
   "author": {
     "name": "Alvaro Cabrera",
     "email": "pateketrueke@gmail.com"

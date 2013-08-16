@@ -1,6 +1,6 @@
 {
-  "name": "app-router-lineman",
-  "version": "0.3.0",
+  "name": "mohawk",
+  "version": "0.3.1",
   "ignore": [
     ".*",
     "app",
