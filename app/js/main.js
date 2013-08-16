@@ -182,18 +182,19 @@
       // methods
       loader = function (modules) {
         var module,
-            klass;
+            klass,
+            out = {};
 
         for (module in modules) {
-          if (! isNaN(parseInt(module, 10))) {
+          if (! isNaN(-module)) {
             klass = String(modules[module]);
-            klass = /\s(.+?)\b/.exec(klass)[1];
+            klass = /function\s(.+?)\b/.exec(klass)[1] || null;
           } else {
             klass = module;
           }
 
           if ('function' !== typeof modules[module]) {
-            throw new Error('<' + klass + '> is not a module!');
+            throw new Error('<' + (klass || modules[module]) + '> is not a module!');
           }
 
           module = new modules[module](instance);
@@ -204,10 +205,10 @@
 
           instance.context.send(module.initialize_module, { draw: default_binding(module, matcher) });
 
-          modules[klass] = module;
+          out[klass] = module;
         }
 
-        return modules;
+        return out;
       };
 
 
@@ -277,7 +278,7 @@
               module;
 
           if ('object' !== typeof modules) {
-            modules = [modules];
+            modules = modules && [modules];
           }
 
           if (! modules || 0 === modules.length) {
