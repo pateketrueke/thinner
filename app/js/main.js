@@ -4,10 +4,7 @@
   var App = (function (undefined) {
 
     // static
-    var default_binding, default_mixin, default_elem,
-        class_regex = /^\.-?[_a-zA-Z]+[\w.-]*$/,
-        tag_regex = /^[a-zA-Z][a-zA-Z]*$/,
-        id_regex = /^#[a-zA-Z][\w-]*$/;
+    var default_binding, default_mixin, default_elem;
 
 
     // context
