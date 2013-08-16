@@ -136,11 +136,13 @@
         a.innerHTML = path;
         a.href = href;
 
-        if (! a.click) {
-          // FIX: PhantomJS (?)
-          a.click = redirect(href);
-        } else if (params.addEventListener) {
+        // FIX: PhantomJS (?)
+        a.click = redirect(href);
+
+        if (a.addEventListener) {
           a.addEventListener('click', redirect(href), false);
+        } else if (a.attachEvent) {
+          a.attachEvent('onclick', redirect(href));
         } else {
           a.onclick = redirect(href);
         }
