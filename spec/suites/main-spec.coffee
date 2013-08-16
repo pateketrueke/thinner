@@ -63,58 +63,6 @@ describe 'Our application:', ->
           str = str.replace /^\s+|\s+$/g, ''
           str
 
-        it 'we can add HTML-elements', ->
-          main = element 'main'
-          main.id = 'main'
-          main.style.display = 'none'
-          main.innerHTML = """
-            <fieldset id="group">
-              <legend>Samples</legend>
-              <label data-extra-attribute></label>
-              <span data-extra-attribute></span>
-              <i class="icon-gear icon-spin"></i>
-            </fieldset>
-          """
-
-          app.context.find('body').appendChild main
-          expect(htmlize(app.context.find('main').firstChild.outerHTML).indexOf('<fieldset')).toEqual 0
-
-        it 'we can find() HTML-elements', ->
-          samples =
-            'group': '<fieldset'
-            '#group': '<fieldset'
-            '#group legend ~ i ': '<i'
-            'legend ~ i ': '<i'
-            'fieldset': '<fieldset'
-            'fieldset legend': '<legend'
-            'fieldset > legend': '<legend'
-            '.icon-gear.icon-spin': '<i'
-            '.icon-spin': '<i'
-
-          for sample, tag of samples
-            try
-              el = app.context.find sample
-              test = if el.length then el[0].outerHTML else el.outerHTML
-
-              expect(htmlize(test).indexOf(tag)).toEqual 0
-            catch e
-
-          expect(app.context.find([app.context.find 'body']).tagName).toEqual 'BODY'
-          expect(app.context.find(app.context.find 'body').tagName).toEqual 'BODY'
-          expect(app.context.find 'body').toEqual document.body
-
-        it 'we can remove HTML-elements also', ->
-          try
-            sample = app.context.find 'main'
-            sample.parentNode.removeChild sample
-
-            cached = app.context.find 'main'
-            uncached = app.context.find 'main', false
-
-            expect(cached).toEqual sample
-            expect(uncached).not.toEqual sample
-          catch e
-
         it 'we can build our application routes with url()', ->
           expect(-> app.context.url 'show').toThrow()
           expect(app.context.url 'make').toEqual '/hi/new'

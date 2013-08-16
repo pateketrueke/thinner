@@ -4,7 +4,7 @@
   var App = (function (undefined) {
 
     // static
-    var default_binding, default_mixin, default_elem, make_elem,
+    var default_binding, default_mixin, default_elem,
         class_regex = /^\.-?[_a-zA-Z]+[\w.-]*$/,
         tag_regex = /^[a-zA-Z][a-zA-Z]*$/,
         id_regex = /^#[a-zA-Z][\w-]*$/;
@@ -34,39 +34,7 @@
 
 
     // DOM
-    default_elem = function (input) {
-      var output;
-
-      if ('object' === typeof input) {
-        if (input.nodeType) {
-          output = input;
-        } else if (input[0] && input[0].nodeType) {
-          output = input[0];
-        }
-      } else if ('string' === typeof input) {
-        if (doc[input]) {
-          output = doc[input];
-        } else if (doc.getElementById) {
-          output = doc.getElementById(input);
-        }
-
-        if (! output) {
-          if (class_regex.test(input)) {
-            output = doc.getElementsByClassName(input.substr(1).replace(/\./g, ' '));
-          } else if (tag_regex.test(input)) {
-            output = doc.getElementsByTagName(input);
-          } else if (id_regex.test(input)) {
-            output = doc.getElementById(input.substr(1));
-          } else {
-            output = doc.querySelectorAll(input);
-          }
-        }
-      }
-
-      return output;
-    };
-
-    make_elem = function (tag) {
+    default_elem = function (tag) {
       return doc.createElement && doc.createElement(tag);
     };
 
@@ -80,8 +48,7 @@
           link_params,
           url_params,
           redirect,
-          popstate,
-          cache = {};
+          popstate;
 
 
       // router.js
@@ -126,7 +93,7 @@
 
       // UJS
       default_link = function (path, params) {
-        var a = make_elem('a'),
+        var a = default_elem('a'),
             attribute,
             href;
 
@@ -224,18 +191,6 @@
           helpers: {},
 
           // API
-          find: function (selector, cached) {
-            if ('string' === typeof selector) {
-              if (false !== cached && null != cache[selector]) {
-                return cache[selector];
-              }
-
-              return cache[selector] = default_elem(selector) || null;
-            }
-
-            return default_elem(selector);
-          },
-
           send: function (partial, params) {
             var length,
                 index = 0;
