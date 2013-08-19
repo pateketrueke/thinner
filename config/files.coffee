@@ -33,6 +33,7 @@ module.exports = lineman.config.extend "files",
     vendor:
       files: [
         "vendor/js/**/*.js"
+        "vendor/components/html5-history-api/history.js"
         "vendor/components/route-recognizer/dist/route-recognizer.js"
         "vendor/components/router.js/dist/router.js"
       ]
