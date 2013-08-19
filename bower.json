@@ -6,6 +6,7 @@
     "app",
     "spec",
     "config",
+    "vendor",
     "Gruntfile.js",
     "package.json",
     "README.md"
