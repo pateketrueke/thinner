@@ -4,7 +4,7 @@ describe 'Our application:', ->
     expect(-> new App).not.toThrow()
 
   describe 'Well.. when it runs,', ->
-    app = new App
+    app = new App '/'
 
     it 'will do not without modules', ->
       expect((new App).run).toThrow()
