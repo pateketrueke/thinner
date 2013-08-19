@@ -1,6 +1,6 @@
 {
   "name": "Mohawk",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Application wrapper built-in on top of router.js",
   "homepage": "https://github.com/pateketrueke/mohawk",
   "author": {
