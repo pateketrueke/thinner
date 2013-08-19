@@ -40,7 +40,7 @@
     return function (path) {
       // private
       var exception, instance, matcher, loader, router,
-          default_path = path || '/',
+          default_path = path || doc.location.pathname,
           default_link,
           link_params,
           url_params,
@@ -278,6 +278,8 @@
 
       if (global.addEventListener) {
         global.addEventListener('popstate', popstate);
+      } else if (global.attachEvent) {
+        global.attachEvent('popstate', popstate);
       } else {
         global.onpopstate = popstate;
       }
