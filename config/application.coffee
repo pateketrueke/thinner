@@ -84,11 +84,14 @@ module.exports = lineman.config.extend "application",
       dest: "<%= files.js.testm.concatenated %>"
 
     dist:
-      src: _([
-              ("<%= files.js.vendor.concatenated %>" if includeVendorInDistribution)
-              "<%= files.js.app.concatenated %>"
-            ]).compact()
-      dest: "<%= files.js.app.concatenatedDist %>"
+      options:
+        process: (src, filepath) ->
+          src.replace /["']use strict['"]\s*;?/g, ''
+      files:
+        "<%= files.js.app.concatenatedDist %>": _([
+          ("<%= files.js.vendor.concatenated %>" if includeVendorInDistribution)
+          "<%= files.js.app.concatenated %>"
+        ]).compact()
 
     app:
       src: "<%= files.js.app.files %>"
