@@ -82,9 +82,7 @@
       };
 
       popstate = function (e) {
-        if (e.state && e.state.to) {
-          instance.context.go(e.state.to, false);
-        }
+        instance.context.go(e.state && e.state.to ? e.state.to : default_path, false);
       };
 
 
