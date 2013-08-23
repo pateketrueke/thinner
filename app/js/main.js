@@ -186,6 +186,8 @@
           helpers: {},
 
           // API
+          fire: function (event) { router.trigger(event); },
+
           send: function (partial, params) {
             var length,
                 retval,
