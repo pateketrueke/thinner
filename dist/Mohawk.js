@@ -2594,7 +2594,7 @@ window.RSVP = requireModule("rsvp");
       @param {Array[Object]} contexts
       @return {Object} a serialized parameter hash
     */
-    paramsForHandler: function(handlerName, callback) {
+    paramsForHandler: function(handlerName, contexts) {
       return paramsForHandler(this, handlerName, slice.call(arguments, 1));
     },
 
@@ -3626,8 +3626,11 @@ window.RSVP = requireModule("rsvp");
           helpers: {},
 
           // API
+          fire: function (event) { router.trigger(event); },
+
           send: function (partial, params) {
             var length,
+                retval,
                 index = 0;
 
             partial = 'object' === typeof partial && partial.length ? partial : [partial];
@@ -3636,8 +3639,10 @@ window.RSVP = requireModule("rsvp");
             length = partial.length;
 
             for (; index < length; index += 1) {
-              partial[index].apply(instance.context, [params]);
+              retval = partial[index].apply(instance.context, [params]);
             }
+
+            return retval;
           },
 
           link: function (path, params, update) { return default_link(path, params, update); },
@@ -3653,7 +3658,7 @@ window.RSVP = requireModule("rsvp");
           go: function (path, params, update) {
             url_params = link_params(path, params, update);
 
-            router.redirectURL(url_params.shift(), url_params.pop());
+            return router.redirectURL(url_params.shift(), url_params.pop(), url_params);
           }
         },
 
@@ -3704,12 +3709,12 @@ window.RSVP = requireModule("rsvp");
         return router.handlers[name] || {};
       };
 
-      router.redirectURL = function(path, update) {
+      router.redirectURL = function(path, update, params) {
         if (false !== update) {
           router.updateURL(path);
-          router.handleURL(path);
+          return router.handleURL(path);
         } else {
-          router.handleURL(path);
+          return router.transitionTo(path, params);
         }
       };
 
