@@ -58,6 +58,9 @@ describe 'Our application:', ->
           app.router.trigger 'testEvent'
           expect(get()).toEqual 'testing'
 
+      async.it 'should handle promises when redirecting', (done) ->
+        app.context.go('home', false).then done
+
       describe 'By the way:', ->
         htmlize = (str) ->
           str = str.replace /<([A-Z]+)|[A-Z]+>/g, ($1) -> $1.toLowerCase()
