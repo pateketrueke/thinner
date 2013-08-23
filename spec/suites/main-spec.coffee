@@ -54,6 +54,7 @@ describe 'Our application:', ->
       async.it 'should trigger some events, i.e. "testEvent"', (done) ->
         app.context.go 'home'
         delay done, ->
+          app.context.fire 'testEvent'
           app.router.trigger 'testEvent'
           expect(get()).toEqual 'testing'
 
