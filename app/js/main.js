@@ -218,7 +218,7 @@
           go: function (path, params, update) {
             url_params = link_params(path, params, update);
 
-            router.redirectURL(url_params.shift(), url_params.pop());
+            return router.redirectURL(url_params.shift(), url_params.pop(), url_params);
           }
         },
 
@@ -269,12 +269,12 @@
         return router.handlers[name] || {};
       };
 
-      router.redirectURL = function(path, update) {
+      router.redirectURL = function(path, update, params) {
         if (false !== update) {
           router.updateURL(path);
-          router.handleURL(path);
+          return router.handleURL(path);
         } else {
-          router.handleURL(path);
+          return router.transitionTo(path, params);
         }
       };
 
