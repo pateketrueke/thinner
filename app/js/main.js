@@ -188,6 +188,7 @@
           // API
           send: function (partial, params) {
             var length,
+                retval,
                 index = 0;
 
             partial = 'object' === typeof partial && partial.length ? partial : [partial];
@@ -196,8 +197,10 @@
             length = partial.length;
 
             for (; index < length; index += 1) {
-              partial[index].apply(instance.context, [params]);
+              retval = partial[index].apply(instance.context, [params]);
             }
+
+            return retval;
           },
 
           link: function (path, params, update) { return default_link(path, params, update); },

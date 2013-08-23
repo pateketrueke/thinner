@@ -74,6 +74,13 @@ describe 'Our application:', ->
             expect(@globals.foo).toEqual 'bar'
             expect(@globals.bar).toBeUndefined()
 
+          test = app.context.send [
+            -> 'foo'
+            -> 'bar'
+          ]
+
+          expect(test).toEqual 'bar'
+
         it 'we can expose useful functions as helpers', ->
           app.context.helpers.foo = -> 'bar'
           app.context.helpers.url_for = -> app.context.url arguments...
