@@ -262,9 +262,9 @@
           for (index in modules) {
             if (this.context.modules[index]) {
               throw new Error('<' + index + '> module already loaded!');
-            } else if ('object' === typeof modules[index]) {
-              this.context.modules[index] = modules[index];
             }
+
+            this.context.modules[index] = modules[index];
           }
 
           return this;
