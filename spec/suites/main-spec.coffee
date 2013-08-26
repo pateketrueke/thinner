@@ -7,7 +7,7 @@ describe 'Our application:', ->
     app = new App '/'
 
     it 'will do not without modules', ->
-      expect((new App).run).toThrow()
+      expect(-> (new App).run()).toThrow()
 
     it 'will expose registered modules', ->
       expect(App.modules()).toEqual { 'Sample': App.Sample }
@@ -22,11 +22,10 @@ describe 'Our application:', ->
       expect(-> app.load ['Irregular value']).toThrow()
 
     it 'will show which module are loaded', ->
-      app.load [Home, Other]
-
       keys = []
       keys.push key for key, module of app.context.modules
 
+      expect(-> app.load Other).toThrow()
       expect(['Home', 'Other']).toEqual keys
 
     it 'will not run over invalid routes', ->

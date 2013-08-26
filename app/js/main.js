@@ -150,16 +150,12 @@
             out = {};
 
         for (module in modules) {
-          if (! isNaN(-module)) {
-            klass = String(modules[module]);
-            klass = /function\s(.+?)\b/.exec(klass)[1] || null;
-          } else {
-            klass = module;
+          if ('function' !== typeof modules[module]) {
+            throw new Error('<' + ('string' === typeof module ? module : modules[module]) + '> is not a module!');
           }
 
-          if ('function' !== typeof modules[module]) {
-            throw new Error('<' + (klass || modules[module]) + '> is not a module!');
-          }
+          klass = String(modules[module]);
+          klass = /function\s(.+?)\b/.exec(klass)[1] || null;
 
           module = new modules[module](instance);
 
@@ -233,7 +229,15 @@
         },
 
         run: function () {
-          if (! this.context.modules || 0 === this.context.modules.length) {
+          var index,
+              length = 0,
+              modules = this.context.modules;
+
+          for (index in modules) {
+            length += parseInt(modules.hasOwnProperty(index), 10);
+          }
+
+          if (0 === length) {
             throw new Error('<App#load> cannot run without modules!');
           }
 
@@ -255,9 +259,10 @@
           modules = loader(modules);
 
           for (index in modules) {
-            if (! this.context.modules[index] && 'object' === typeof modules[index]) {
-              module = modules[index];
-              this.context.modules[index] = module;
+            if (this.context.modules[index]) {
+              throw new Error('<' + index + '> module already loaded!');
+            } else if ('object' === typeof modules[index]) {
+              this.context.modules[index] = modules[index];
             }
           }
 
