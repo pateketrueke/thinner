@@ -218,7 +218,17 @@
           go: function (path, params, update) {
             url_params = link_params(path, params, update);
 
-            return router.redirectURL(url_params.shift(), url_params.pop(), url_params);
+            params = url_params[1] || {};
+            update = url_params[2];
+            path = url_params[0];
+
+            if (update) {
+              return router.redirectURL(path);
+            } else if (path.charAt(0) === '/') {
+              return router.redirectURL(path, update);
+            } else {
+              return router.transitionTo(arguments[0], params);
+            }
           }
         },
 
@@ -269,13 +279,12 @@
         return router.handlers[name] || {};
       };
 
-      router.redirectURL = function(path, update, params) {
+      router.redirectURL = function(path, update) {
         if (false !== update) {
           router.updateURL(path);
-          return router.handleURL(path);
-        } else {
-          return router.transitionTo(path, params);
         }
+
+        return router.handleURL(path);
       };
 
 
