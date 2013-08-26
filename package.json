@@ -1,6 +1,6 @@
 {
   "name": "Mohawk",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Application wrapper built-in on top of router.js and HTML5-History-API",
   "homepage": "https://github.com/pateketrueke/mohawk",
   "author": {

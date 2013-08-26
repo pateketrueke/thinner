@@ -141,7 +141,7 @@ define("rsvp/async",
 
     function useSetTimeout() {
       return function(callback, arg) {
-        setTimeout(function() {
+        global.setTimeout(function() {
           callback(arg);
         }, 1);
       };
@@ -630,19 +630,36 @@ define("rsvp/resolve",
 
     __exports__.resolve = resolve;
   });
+define("rsvp/rethrow",
+  ["exports"],
+  function(__exports__) {
+    
+    var local = (typeof global === "undefined") ? this : global;
+
+    function rethrow(reason) {
+      local.setTimeout(function() {
+        throw reason;
+      });
+      throw reason;
+    }
+
+
+    __exports__.rethrow = rethrow;
+  });
 define("rsvp",
-  ["rsvp/events","rsvp/promise","rsvp/node","rsvp/all","rsvp/hash","rsvp/defer","rsvp/config","rsvp/resolve","rsvp/reject","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __exports__) {
+  ["rsvp/events","rsvp/promise","rsvp/node","rsvp/all","rsvp/hash","rsvp/rethrow","rsvp/defer","rsvp/config","rsvp/resolve","rsvp/reject","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __exports__) {
     
     var EventTarget = __dependency1__.EventTarget;
     var Promise = __dependency2__.Promise;
     var denodeify = __dependency3__.denodeify;
     var all = __dependency4__.all;
     var hash = __dependency5__.hash;
-    var defer = __dependency6__.defer;
-    var config = __dependency7__.config;
-    var resolve = __dependency8__.resolve;
-    var reject = __dependency9__.reject;
+    var rethrow = __dependency6__.rethrow;
+    var defer = __dependency7__.defer;
+    var config = __dependency8__.config;
+    var resolve = __dependency9__.resolve;
+    var reject = __dependency10__.reject;
 
     function configure(name, value) {
       config[name] = value;
@@ -653,6 +670,7 @@ define("rsvp",
     __exports__.EventTarget = EventTarget;
     __exports__.all = all;
     __exports__.hash = hash;
+    __exports__.rethrow = rethrow;
     __exports__.defer = defer;
     __exports__.denodeify = denodeify;
     __exports__.configure = configure;
@@ -2635,7 +2653,7 @@ window.RSVP = requireModule("rsvp");
 
             if (isParam(object)) {
               var recogHandler = recogHandlers[i], name = recogHandler.names[0];
-              if (object.toString() !== this.currentParams[name]) { return false; }
+              if ("" + object !== this.currentParams[name]) { return false; }
             } else if (handlerInfo.context !== object) {
               return false;
             }
@@ -3252,8 +3270,8 @@ window.RSVP = requireModule("rsvp");
                          .then(handleAbort)
                          .then(afterModel)
                          .then(handleAbort)
-                         .then(proceed)
-                         .then(null, handleError);
+                         .then(null, handleError)
+                         .then(proceed);
 
     function handleAbort(result) {
       if (transition.isAborted) {
@@ -3279,10 +3297,6 @@ window.RSVP = requireModule("rsvp");
       // An error was thrown / promise rejected, so fire an
       // `error` event from this handler info up to root.
       trigger(handlerInfos.slice(0, index + 1), true, ['error', reason, transition]);
-
-      if (handler.error) {
-        handler.error(reason, transition);
-      }
 
       // Propagate the original error.
       return RSVP.reject(reason);
@@ -3618,16 +3632,16 @@ window.RSVP = requireModule("rsvp");
 
       // public
       instance = {
-        router: router,
-        modules: {},
         context: {
-          // locals
+          // router.js
+          router: router,
+
+          // locals (?)
           globals: {},
           helpers: {},
+          modules: {},
 
           // API
-          fire: function (event) { router.trigger(event); },
-
           send: function (partial, params) {
             var length,
                 retval,
@@ -3658,12 +3672,22 @@ window.RSVP = requireModule("rsvp");
           go: function (path, params, update) {
             url_params = link_params(path, params, update);
 
-            return router.redirectURL(url_params.shift(), url_params.pop(), url_params);
+            params = url_params[1] || {};
+            update = url_params[2];
+            path = url_params[0];
+
+            if (update) {
+              return router.redirectURL(path);
+            } else if (path.charAt(0) === '/') {
+              return router.redirectURL(path, update);
+            } else {
+              return router.transitionTo(arguments[0], params);
+            }
           }
         },
 
         run: function () {
-          if (! this.modules || 0 === this.modules.length) {
+          if (! this.context.modules || 0 === this.context.modules.length) {
             throw new Error('<App#load> cannot run without modules!');
           }
 
@@ -3685,9 +3709,9 @@ window.RSVP = requireModule("rsvp");
           modules = loader(modules);
 
           for (index in modules) {
-            if (! this.modules[index] && 'object' === typeof modules[index]) {
+            if (! this.context.modules[index] && 'object' === typeof modules[index]) {
               module = modules[index];
-              this.modules[index] = module;
+              this.context.modules[index] = module;
             }
           }
 
@@ -3709,13 +3733,12 @@ window.RSVP = requireModule("rsvp");
         return router.handlers[name] || {};
       };
 
-      router.redirectURL = function(path, update, params) {
+      router.redirectURL = function(path, update) {
         if (false !== update) {
           router.updateURL(path);
-          return router.handleURL(path);
-        } else {
-          return router.transitionTo(path, params);
         }
+
+        return router.handleURL(path);
       };
 
 
