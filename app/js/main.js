@@ -232,8 +232,8 @@
 
             return path.charAt(0) === '/' ? router.redirectURL(path, update)
               : update ? router.redirectURL(url_params[0])
-              : ! size_of(params) ? router.transitionTo(arguments[0])
-              : router.transitionTo(arguments[0], params);
+              : ! size_of(params) ? router.transitionTo(path)
+              : router.transitionTo(path, params);
           }
         },
 
