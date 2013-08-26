@@ -262,9 +262,7 @@
           }
 
           return this;
-        },
-
-        instance: function () {}
+        }
       };
 
 
