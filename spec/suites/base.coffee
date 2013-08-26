@@ -1,6 +1,7 @@
 history.replaceState = ->
 history.pushState = ->
 
+global = this
 
 ctx = []
 
