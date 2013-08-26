@@ -178,16 +178,16 @@
 
       // public
       instance = {
-        router: router,
-        modules: {},
         context: {
-          // locals
+          // router.js
+          router: router,
+
+          // locals (?)
           globals: {},
           helpers: {},
+          modules: {},
 
           // API
-          fire: function (event) { router.trigger(event); },
-
           send: function (partial, params) {
             var length,
                 retval,
@@ -233,7 +233,7 @@
         },
 
         run: function () {
-          if (! this.modules || 0 === this.modules.length) {
+          if (! this.context.modules || 0 === this.context.modules.length) {
             throw new Error('<App#load> cannot run without modules!');
           }
 
@@ -255,14 +255,16 @@
           modules = loader(modules);
 
           for (index in modules) {
-            if (! this.modules[index] && 'object' === typeof modules[index]) {
+            if (! this.context.modules[index] && 'object' === typeof modules[index]) {
               module = modules[index];
-              this.modules[index] = module;
+              this.context.modules[index] = module;
             }
           }
 
           return this;
-        }
+        },
+
+        instance: function () {}
       };
 
 

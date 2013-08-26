@@ -25,7 +25,7 @@ describe 'Our application:', ->
       app.load [Home, Other]
 
       keys = []
-      keys.push key for key, module of app.modules
+      keys.push key for key, module of app.context.modules
 
       expect(['Home', 'Other']).toEqual keys
 
@@ -54,8 +54,7 @@ describe 'Our application:', ->
       async.it 'should trigger some events, i.e. "testEvent"', (done) ->
         app.context.go 'home'
         delay done, ->
-          app.context.fire 'testEvent'
-          app.router.trigger 'testEvent'
+          app.context.router.trigger 'testEvent'
           expect(get()).toEqual 'testing'
 
       async.it 'should handle promises when redirecting', (done) ->
