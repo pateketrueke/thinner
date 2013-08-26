@@ -4,7 +4,7 @@
   var App = (function (undefined) {
 
     // static
-    var default_binding, default_mixin, default_elem;
+    var default_binding, default_mixin, default_elem, size_of;
 
 
     // context
@@ -33,6 +33,19 @@
     // DOM
     default_elem = function (tag) {
       return doc.createElement && doc.createElement(tag);
+    };
+
+
+    // obj.length
+    size_of = function (set) {
+      var index,
+          length = 0;
+
+      for (index in set) {
+        length += parseInt(set.hasOwnProperty(index), 10);
+      }
+
+      return length;
     };
 
 
@@ -216,28 +229,16 @@
 
             params = url_params[1] || {};
             update = url_params[2];
-            path = url_params[0];
 
-            if (update) {
-              return router.redirectURL(path);
-            } else if (path.charAt(0) === '/') {
-              return router.redirectURL(path, update);
-            } else {
-              return router.transitionTo(arguments[0], params);
-            }
+            return path.charAt(0) === '/' ? router.redirectURL(path, update)
+              : update ? router.redirectURL(url_params[0])
+              : ! size_of(params) ? router.transitionTo(arguments[0])
+              : router.transitionTo(arguments[0], params);
           }
         },
 
         run: function () {
-          var index,
-              length = 0,
-              modules = this.context.modules;
-
-          for (index in modules) {
-            length += parseInt(modules.hasOwnProperty(index), 10);
-          }
-
-          if (0 === length) {
+          if (0 === size_of(this.context.modules)) {
             throw new Error('<App#load> cannot run without modules!');
           }
 

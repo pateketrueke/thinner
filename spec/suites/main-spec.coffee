@@ -51,13 +51,13 @@ describe 'Our application:', ->
           expect(get()).toEqual 'new'
 
       async.it 'should trigger some events, i.e. "testEvent"', (done) ->
-        app.context.go 'home'
+        app.context.go 'home', off
         delay done, ->
           app.context.router.trigger 'testEvent'
           expect(get()).toEqual 'testing'
 
       async.it 'should handle promises when redirecting', (done) ->
-        app.context.go('home', false).then done
+        app.context.go('home').then done
 
       describe 'By the way:', ->
         htmlize = (str) ->
