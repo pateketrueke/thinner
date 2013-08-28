@@ -14,7 +14,6 @@
   "devDependencies": {
     "route-recognizer": "https://github.com/tildeio/route-recognizer.git",
     "router.js": "https://github.com/tildeio/router.js.git",
-    "html5-history-api": "~4.0.2",
     "jasmine.async": "~0.1.0",
     "blanket": "~1.1.5"
   }
