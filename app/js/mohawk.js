@@ -50,14 +50,23 @@
     return function (fn) {
       var key,
           self,
+          Handle,
           handler,
-          handlers = {};
+          handlers = {},
+          context = app.context;
 
       self = this;
 
       app.router.map(function(match) {
         handlers = fn.apply(self, [match]) || {};
       });
+
+
+      if ('function' === typeof handlers) {
+        Handle = handlers;
+        context = new Handle(app);
+        handlers = context.handlers || context;
+      }
 
       for (key in handlers) {
         handler = handlers[key];
@@ -67,7 +76,7 @@
           this[key].model = proxy;
         }
 
-        app.handlers[key] = handle(app.context, this[key]);
+        app.handlers[key] = handle(context, this[key]);
       }
     };
   };
@@ -155,6 +164,7 @@
 
     // API
 
+    this.classes = {};
     this.modules = {};
 
     this.context = {
@@ -182,11 +192,7 @@
 
       // assembly urls
       url: function (name, params) {
-        try {
-          return app.router.recognizer.generate(name, params);
-        } catch (exception) {
-          throw new Error('<' + name + '> route not found or missing params!');
-        }
+        return app.router.recognizer.generate(name, params);
       },
 
       // redirections
@@ -240,6 +246,8 @@
       for (klass in ns) {
         if (klass.charAt(0) === klass.charAt(0).toUpperCase()) {
           app.load(ns[klass]);
+        } else {
+          app.classes[klass] = ns[klass];
         }
       }
 
@@ -270,7 +278,11 @@
     };
 
     router.getHandler = function(name) {
-      return self.handlers[name] || {};
+      if (! self.handlers[name]) {
+        throw new Error('<' + name + '> undefined handler!');
+      }
+
+      return self.handlers[name];
     };
 
     router.redirectURL = function(path, update) {
