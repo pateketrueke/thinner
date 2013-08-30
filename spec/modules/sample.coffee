@@ -1,1 +1,1 @@
-class App.Sample
+class Sample

@@ -1,16 +1,10 @@
 describe 'Our application:', ->
 
   it 'will never happen without router.js', ->
-    expect(-> new App).not.toThrow()
+    expect(-> new Router).not.toThrow()
 
   describe 'Well.. when it runs,', ->
-    app = new App '/'
-
-    it 'will do not without modules', ->
-      expect(-> (new App).run()).toThrow()
-
-    it 'will expose registered modules', ->
-      expect(App.modules()).toEqual { 'Sample': App.Sample }
+    app = run()
 
     it 'will validate all their modules', ->
       expect(app.load).toThrow()
@@ -18,25 +12,27 @@ describe 'Our application:', ->
       expect(-> app.load Blank).toThrow()
       expect(-> app.load Breaking).toThrow()
       expect(-> app.load Undefined).toThrow()
-      expect(-> app.load App.modules()).toThrow()
+      expect(-> app.load { Sample }).toThrow()
       expect(-> app.load ['Irregular value']).toThrow()
 
     it 'will show which module are loaded', ->
+      app.load [Home, Other]
+
       keys = []
-      keys.push key for key, module of app.context.modules
+      keys.push key for key, module of app.modules
 
       expect(-> app.load Other).toThrow()
       expect(['Home', 'Other']).toEqual keys
 
     it 'will not run over invalid routes', ->
-      expect(new App('/x/y/z').load(Other).run).toThrow()
+      expect(-> app.context.go('/abc')).toThrow()
+      expect(-> app.context.go('whatever')).toThrow()
 
     describe 'Looking at routes:', ->
       async = new AsyncSpec @
 
-      app.load([Home, Other]).run()
-
       async.it 'should display "Hello World" at /', (done) ->
+        app.context.go '/'
         delay done, ->
           expect(get()).toEqual 'Hello World'
 
@@ -53,18 +49,13 @@ describe 'Our application:', ->
       async.it 'should trigger some events, i.e. "testEvent"', (done) ->
         app.context.go 'home', off
         delay done, ->
-          app.context.router.trigger 'testEvent'
+          app.router.trigger 'testEvent'
           expect(get()).toEqual 'testing'
 
       async.it 'should handle promises when redirecting', (done) ->
         app.context.go('home').then done
 
       describe 'By the way:', ->
-        htmlize = (str) ->
-          str = str.replace /<([A-Z]+)|[A-Z]+>/g, ($1) -> $1.toLowerCase()
-          str = str.replace /^\s+|\s+$/g, ''
-          str
-
         it 'we can build our application routes with url()', ->
           expect(-> app.context.url 'show').toThrow()
           expect(app.context.url 'make').toEqual '/hi/new'
@@ -78,7 +69,7 @@ describe 'Our application:', ->
 
           test = app.context.send [
             -> 'foo'
-            -> 'bar'
+            -> @globals.foo
           ]
 
           expect(test).toEqual 'bar'
@@ -86,21 +77,7 @@ describe 'Our application:', ->
         it 'we can expose useful functions as helpers', ->
           app.context.helpers.foo = -> 'bar'
           app.context.helpers.url_for = -> app.context.url arguments...
-          app.context.helpers.link_to = -> app.context.link arguments...
 
           app.context.send ->
             expect(@helpers.foo()).toEqual 'bar'
             expect(@helpers.url_for 'make').toEqual '/hi/new'
-            expect(htmlize(@helpers.link_to('make').outerHTML)).toEqual '<a href="/hi/new">make</a>'
-
-        describe 'And our links:', ->
-          it 'will be html-compliant', ->
-            b = app.context.link 'make', innerHTML: 'Hello?'
-            expect(htmlize(b.outerHTML)).toEqual '<a href="/hi/new">Hello?</a>'
-
-          async.it 'will trigger redirections', (done) ->
-            a = app.context.link 'make'
-            a.click()
-
-            delay done, ->
-              expect(get()).toEqual 'new'
