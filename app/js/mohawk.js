@@ -8,6 +8,7 @@
       doc = this.document,
       history = win.history,
       popevents = [],
+      modules = {},
       exception;
 
 
@@ -237,11 +238,9 @@
 
 
     // start
-    this.run = function () {
+    this.run = function (block) {
       var klass,
           module;
-
-      delete app.run;
 
       for (klass in ns) {
         if (klass.charAt(0) === klass.charAt(0).toUpperCase()) {
@@ -251,6 +250,10 @@
         }
       }
 
+      if ('function' === typeof block) {
+        block.apply(app.context, [app]);
+      }
+
       return app;
     };
 
@@ -258,17 +261,28 @@
 
 
   // exports magic
-  this.run = function (app) {
-    var self = new Mohawk.bind(app),
-        router = new Router();
+  this.run = function (block) {
+    var App = {},
+        self = new Mohawk.bind(App),
+        router = new Router(),
+        length, index = 0,
+        module;
 
     // settings
     self.handlers = {};
     self.router = router;
 
+    // load modules
+    for (module in modules) {
+      length = modules[module].length;
+
+      while (index < length) {
+        modules[module][index](App);
+        index += 1;
+      }
+    }
 
     // attach events
-
     popevents.push(self);
 
     router.updateURL = function(path) {
@@ -293,7 +307,17 @@
       return router.handleURL(path);
     };
 
-    return self.run();
+    return self.run(block);
+  };
+
+
+  // some isolation
+  this.module = function (name, block) {
+    if (! (name in modules)) {
+      modules[name] = [];
+    }
+
+    modules[name].push(block);
   };
 
 }).call(this);
