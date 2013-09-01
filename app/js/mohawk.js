@@ -12,6 +12,46 @@
       exception;
 
 
+  // default hooks
+  var grow = function (from, handler) {
+    if (! ('model' in handler)) {
+      handler.model = proxy;
+    }
+
+    return handle(from.context, handler);
+  };
+
+
+  // nice handlers
+  var camelize = function (str) {
+    return str.replace(/(_[a-z])/g, function ($1) { return $1.substr(1).toUpperCase(); });
+  };
+
+
+  // remove handlers
+  var dispose = function (from, name, fn) {
+    return function () {
+      var retval = 'function' === typeof fn ? fn.apply(null, arguments) : undefined;
+
+      // only if can be created again
+      delete from.handlers[name];
+
+      return retval;
+    };
+  };
+
+
+  // bind handlers
+  var delegate = function (from, name) {
+    var handler;
+
+    handler = grow(from, new from.classes[name](from));
+    handler.exit = dispose(from, name, handler.exit || undefined);
+
+    return handler;
+  };
+
+
   // object length
   var count = function (set) {
     var index,
@@ -49,35 +89,20 @@
   // setup routing
   var matcher = function (app) {
     return function (fn) {
-      var key,
-          self,
-          Handle,
-          handler,
-          handlers = {},
-          context = app.context;
-
-      self = this;
+      var handler,
+          handlers,
+          self = this;
 
       app.router.map(function(match) {
-        handlers = fn.apply(self, [match]) || {};
+        handlers = fn.apply(self, [match]);
       });
 
 
-      if ('function' === typeof handlers) {
-        Handle = handlers;
-        context = new Handle(app);
-        handlers = context.handlers || context;
-      }
-
-      for (key in handlers) {
-        handler = handlers[key];
-        this[key] = typeof handler === 'function' ? { setup: handler } : handler;
-
-        if (! ('model' in this[key])) {
-          this[key].model = proxy;
+      // backward compatibility
+      if (handlers && 'object' === typeof handlers) {
+        for (handler in handlers) {
+          app.handlers[handler] = handlers[handler];
         }
-
-        app.handlers[key] = handle(context, this[key]);
       }
     };
   };
@@ -112,7 +137,7 @@
       }
 
       klass = String(modules[module]);
-      klass = /function\s(.+?)\b/.exec(klass)[1] || null;
+      klass = /function\s(.+?)\b/.exec(klass)[1] || undefined;
 
       module = new modules[module](app);
 
@@ -124,7 +149,7 @@
         throw new Error('<' + klass + '> module already loaded!');
       }
 
-      app.context.send(module.initialize_module, { draw: handle(module, matcher(app)) });
+      app.context.send(module.initialize_module, { draw: matcher(app) });
       app.modules[klass] = module;
     }
   };
@@ -154,6 +179,37 @@
   } else {
     win.onpopstate = popstate;
   }
+
+
+  // cached objects
+  Mohawk.broker = function (app, name) {
+    var klass = camelize(name);
+
+    // backward compatibility
+    if (app.handlers[name]) {
+      if ('function' === typeof app.handlers[name]) {
+        app.handlers[name] = { setup: app.handlers[name] };
+      }
+
+      if (! ('grown' in app.handlers[name])) {
+        app.handlers[name] = grow(app, app.handlers[name]);
+        app.handlers[name].grown = true;
+      }
+
+      return app.handlers[name];
+    }
+
+
+    if (! app.classes[klass]) {
+      throw new Error('<' + klass + '> undefined handler!');
+    }
+
+    if (! app.handlers[klass]) {
+      app.handlers[klass] = delegate(app, klass);
+    }
+
+    return app.handlers[klass];
+  };
 
 
   // constructor
@@ -277,7 +333,7 @@
       length = modules[module].length;
 
       while (index < length) {
-        modules[module][index](App);
+        modules[module][index].apply(self.context, [App]);
         index += 1;
       }
     }
@@ -292,11 +348,7 @@
     };
 
     router.getHandler = function(name) {
-      if (! self.handlers[name]) {
-        throw new Error('<' + name + '> undefined handler!');
-      }
-
-      return self.handlers[name];
+      return Mohawk.broker(self, name);
     };
 
     router.redirectURL = function(path, update) {
