@@ -4,7 +4,7 @@ describe 'Our application:', ->
     expect(-> new Router).not.toThrow()
 
   describe 'Well.. when it runs,', ->
-    app = run()
+    app = run(->)
 
     it 'will validate all their modules', ->
       expect(app.load).toThrow()
@@ -22,11 +22,12 @@ describe 'Our application:', ->
       keys.push key for key, module of app.modules
 
       expect(-> app.load Other).toThrow()
-      expect(['Home', 'Other']).toEqual keys
+      expect(['Module', 'Home', 'Other']).toEqual keys
 
     it 'will not run over invalid routes', ->
       expect(-> app.context.go('/abc')).toThrow()
       expect(-> app.context.go('whatever')).toThrow()
+      expect(-> app.context.go('no_handler')).toThrow()
 
     describe 'Looking at routes:', ->
       async = new AsyncSpec @
@@ -54,6 +55,12 @@ describe 'Our application:', ->
 
       async.it 'should handle promises when redirecting', (done) ->
         app.context.go('home').then done
+
+      async.it 'should care about onpopstate events', (done) ->
+        app.context.go '/some_path'
+        history.back -1
+        delay done, ->
+          expect(document.location.pathname).not.toEqual '/some_path'
 
       describe 'By the way:', ->
         it 'we can build our application routes with url()', ->

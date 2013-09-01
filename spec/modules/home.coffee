@@ -5,11 +5,11 @@ class Home
       match('/hi/new').to 'make'
       match('/hi/:name').to 'show'
 
-      make: -> set 'new'
+      make: -> @set 'new'
       home:
-        setup: -> set 'Hello World'
+        setup: -> @set 'Hello World'
         events:
-          testEvent: (handler) -> set 'testing'
+          testEvent: (handler) -> @set 'testing'
       show:
         model: (params) -> new User params
-        setup: (user) -> set "Hi #{user.name}!"
+        setup: (user) -> @set "Hi #{user.name}!"
