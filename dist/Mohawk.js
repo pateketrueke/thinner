@@ -3242,8 +3242,6 @@ window.RSVP = requireModule("rsvp");
 
     var params = paramsForHandler(router, handlerName, objects);
 
-    transition.providedModelsArray = [];
-    transition.providedContexts = {};
     router.currentParams = params;
 
     var urlMethod = transition.urlMethod;
@@ -3579,7 +3577,11 @@ window.RSVP = requireModule("rsvp");
       };
 
       popstate = function (e) {
-        instance.context.go(e.state && e.state.to ? e.state.to : default_path, false);
+        if (e.state && e.state.to) {
+          router.redirectURL(e.state.to, false, e.state.q);
+        } else {
+          throw new Error('<' + String(e.state) + '> unknown path!');
+        }
       };
 
 
@@ -3714,8 +3716,12 @@ window.RSVP = requireModule("rsvp");
             params = url_params[1] || {};
             update = url_params[2];
 
-            return path.charAt(0) === '/' ? router.redirectURL(path, update)
-              : update ? router.redirectURL(url_params[0])
+            locals = params.locals;
+
+            delete params.locals;
+
+            return path.charAt(0) === '/' ? router.redirectURL(path, update, locals)
+              : update ? router.redirectURL(url_params[0], true, locals)
               : ! size_of(params) ? router.transitionTo(path)
               : router.transitionTo(path, params);
           }
@@ -3726,7 +3732,7 @@ window.RSVP = requireModule("rsvp");
             throw new Error('<App#load> cannot run without modules!');
           }
 
-          return this.context.go(default_path, false);
+          return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || undefined);
         },
 
         load: function (modules) {
@@ -3759,9 +3765,9 @@ window.RSVP = requireModule("rsvp");
       // construct
       router.handlers = {};
 
-      router.updateURL = function(path) {
+      router.updateURL = function(path, query) {
         if (global.history && global.history.pushState) {
-          global.history.pushState({ to: path }, null, path);
+          global.history.pushState({ to: path, q: query }, null, path + (query ? '?' + query : ''));
         }
       };
 
@@ -3769,9 +3775,21 @@ window.RSVP = requireModule("rsvp");
         return router.handlers[name] || {};
       };
 
-      router.redirectURL = function(path, update) {
+      router.redirectURL = function(path, update, locals) {
+        if (undefined !== locals) {
+          if ('object' === typeof locals) {
+            // TODO: use something like http_build_query()
+            throw new Error('Not implemented yet!');
+          } else {
+            locals = String(locals);
+          }
+        }
+
+
         if (false !== update) {
-          router.updateURL(path);
+          router.updateURL(path, locals || null);
+        } else if (global.history && global.history.replaceState) {
+          global.history.replaceState({ to: path, q: locals }, null, path + (locals ? '?' + locals : ''));
         }
 
         return router.handleURL(path);
