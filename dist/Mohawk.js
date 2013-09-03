@@ -3736,10 +3736,14 @@ window.RSVP = requireModule("rsvp");
           }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
           return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || undefined);
 =======
           return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || null);
 >>>>>>> Adds missing features; dump 0.4.2
+=======
+          return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || undefined);
+>>>>>>> Adds: internal history stack, query string, url-handling fixes
         },
 
         load: function (modules) {
