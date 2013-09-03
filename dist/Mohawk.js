@@ -1209,7 +1209,7 @@ var define, requireModule;
 define("rsvp/all",
   ["rsvp/promise","exports"],
   function(__dependency1__, __exports__) {
-    
+
     var Promise = __dependency1__.Promise;
     /* global toString */
 
@@ -1258,7 +1258,7 @@ define("rsvp/all",
 define("rsvp/async",
   ["exports"],
   function(__exports__) {
-    
+
     var browserGlobal = (typeof window !== 'undefined') ? window : {};
     var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
     var async;
@@ -1334,7 +1334,7 @@ define("rsvp/async",
 define("rsvp/config",
   ["rsvp/async","exports"],
   function(__dependency1__, __exports__) {
-    
+
     var async = __dependency1__.async;
 
     var config = {};
@@ -1346,7 +1346,7 @@ define("rsvp/config",
 define("rsvp/defer",
   ["rsvp/promise","exports"],
   function(__dependency1__, __exports__) {
-    
+
     var Promise = __dependency1__.Promise;
 
     function defer() {
@@ -1371,7 +1371,7 @@ define("rsvp/defer",
 define("rsvp/events",
   ["exports"],
   function(__exports__) {
-    
+
     var Event = function(type, options) {
       this.type = type;
 
@@ -1472,7 +1472,7 @@ define("rsvp/events",
 define("rsvp/hash",
   ["rsvp/defer","exports"],
   function(__dependency1__, __exports__) {
-    
+
     var defer = __dependency1__.defer;
 
     function size(object) {
@@ -1526,7 +1526,7 @@ define("rsvp/hash",
 define("rsvp/node",
   ["rsvp/promise","rsvp/all","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
-    
+
     var Promise = __dependency1__.Promise;
     var all = __dependency2__.all;
 
@@ -1572,7 +1572,7 @@ define("rsvp/node",
 define("rsvp/promise",
   ["rsvp/config","rsvp/events","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
-    
+
     var config = __dependency1__.config;
     var EventTarget = __dependency2__.EventTarget;
 
@@ -1774,7 +1774,7 @@ define("rsvp/promise",
 define("rsvp/reject",
   ["rsvp/promise","exports"],
   function(__dependency1__, __exports__) {
-    
+
     var Promise = __dependency1__.Promise;
 
     function reject(reason) {
@@ -1789,7 +1789,7 @@ define("rsvp/reject",
 define("rsvp/resolve",
   ["rsvp/promise","exports"],
   function(__dependency1__, __exports__) {
-    
+
     var Promise = __dependency1__.Promise;
 
     function resolve(thenable) {
@@ -1804,7 +1804,7 @@ define("rsvp/resolve",
 define("rsvp/rethrow",
   ["exports"],
   function(__exports__) {
-    
+
     var local = (typeof global === "undefined") ? this : global;
 
     function rethrow(reason) {
@@ -1820,7 +1820,7 @@ define("rsvp/rethrow",
 define("rsvp",
   ["rsvp/events","rsvp/promise","rsvp/node","rsvp/all","rsvp/hash","rsvp/rethrow","rsvp/defer","rsvp/config","rsvp/resolve","rsvp/reject","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __exports__) {
-    
+
     var EventTarget = __dependency1__.EventTarget;
     var Promise = __dependency2__.Promise;
     var denodeify = __dependency3__.denodeify;
@@ -1852,7 +1852,7 @@ window.RSVP = requireModule("rsvp");
 })(window);
 
 (function(exports) {
-  
+
   var specials = [
     '/', '.', '*', '+', '?', '|',
     '(', ')', '[', ']', '{', '}', '\\'
@@ -2359,7 +2359,7 @@ window.RSVP = requireModule("rsvp");
 })(window);
 
 (function(exports, RouteRecognizer, RSVP) {
-  
+
   /**
     @private
 
@@ -3481,7 +3481,7 @@ window.RSVP = requireModule("rsvp");
 })(window, window.RouteRecognizer, window.RSVP);
 
 (function (undefined) {
-  
+
 
   // shortcuts
   var Mohawk,
