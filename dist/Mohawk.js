@@ -3735,7 +3735,11 @@ window.RSVP = requireModule("rsvp");
             throw new Error('<App#load> cannot run without modules!');
           }
 
+<<<<<<< HEAD
           return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || undefined);
+=======
+          return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || null);
+>>>>>>> Adds missing features; dump 0.4.2
         },
 
         load: function (modules) {
