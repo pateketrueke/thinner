@@ -3732,7 +3732,7 @@ window.RSVP = requireModule("rsvp");
             throw new Error('<App#load> cannot run without modules!');
           }
 
-          return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || null);
+          return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || undefined);
         },
 
         load: function (modules) {
