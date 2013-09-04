@@ -1,8 +1,8 @@
-module 'example', (My) ->
-  class My.Module
+module 'example', (App) ->
+  class App.Module
     initialize_module: (mapper) ->
       mapper.draw (match) ->
         match('/example').to 'no_handler'
-        match('/some_path').to 'my_handler'
+        match('/some_path').to 'my.handler'
 
-  class My.myHandler
+  class App.myHandler
