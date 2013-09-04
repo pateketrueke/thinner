@@ -88,10 +88,11 @@
 
   // setup routing
   var matcher = function (app) {
+    var self = this;
+
     return function (fn) {
       var handler,
-          handlers,
-          self = this;
+          handlers;
 
       app.router.map(function(match) {
         handlers = fn.apply(self, [match]);
@@ -149,7 +150,7 @@
         throw new Error('<' + klass + '> module already loaded!');
       }
 
-      app.context.send(module.initialize_module, { draw: matcher(app) });
+      app.context.send(module.initialize_module, { draw: matcher.apply(module, [app]) });
       app.modules[klass] = module;
     }
   };
