@@ -3578,7 +3578,7 @@ window.RSVP = requireModule("rsvp");
 
       popstate = function (e) {
         if (e.state && e.state.to) {
-          router.redirectURL(e.state.to, false, e.state.q);
+          router.handleURL(e.state.to);
         } else {
           throw new Error('<' + String(e.state) + '> unknown path!');
         }
@@ -3678,6 +3678,7 @@ window.RSVP = requireModule("rsvp");
           router: router,
 
           // locals (?)
+          history: [],
           globals: {},
           helpers: {},
           modules: {},
@@ -3711,6 +3712,8 @@ window.RSVP = requireModule("rsvp");
           },
 
           go: function (path, params, update) {
+            var locals;
+
             url_params = link_params(path, params, update);
 
             params = url_params[1] || {};
@@ -3788,6 +3791,7 @@ window.RSVP = requireModule("rsvp");
 
         if (false !== update) {
           router.updateURL(path, locals || null);
+          instance.context.history.push({ to: path, q: locals });
         } else if (global.history && global.history.replaceState) {
           global.history.replaceState({ to: path, q: locals }, null, path + (locals ? '?' + locals : ''));
         }
