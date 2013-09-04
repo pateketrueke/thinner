@@ -164,8 +164,10 @@
       while (index) {
         index -= 1;
 
-        app = popevents[index];
-        app.context.go(e.state.to, false);
+        if (e.state && e.state.to) {
+          app = popevents[index];
+          app.router.handleURL(e.state.to);
+        }
       }
     }
   };
@@ -221,9 +223,9 @@
 
     // API
 
+    this.history = [];
     this.classes = {};
     this.modules = {};
-
     this.context = {
 
       globals: {},
@@ -254,19 +256,23 @@
 
       // redirections
       go: function (path, params, update) {
-        var args = url_params(app, path, params, update);
+        var args = url_params(app, path, params, update),
+            locals;
 
         params = args[1] || {};
         update = args[2];
+
+        locals = params.locals;
+        delete params.locals;
 
         if (path.charAt(0) === '/') {
           if (! app.router.recognizer.recognize(path)) {
             throw new Error('<' + path + '> route not found!');
           }
 
-          return app.router.redirectURL(path, update);
+          return app.router.redirectURL(path, update, locals);
         } else {
-          return update ? app.router.redirectURL(args[0])
+          return update ? app.router.redirectURL(args[0], true, locals)
             : ! count(params) ? app.router.transitionTo(path)
             : app.router.transitionTo(path, params);
         }
@@ -341,9 +347,9 @@
     // attach events
     popevents.push(self);
 
-    router.updateURL = function(path) {
+    router.updateURL = function(path, query) {
       if (history && history.pushState) {
-        history.pushState({ to: path }, doc.title, path);
+        history.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
       }
     };
 
@@ -351,9 +357,21 @@
       return Mohawk.broker(self, name);
     };
 
-    router.redirectURL = function(path, update) {
+    router.redirectURL = function(path, update, locals) {
+      if (undefined !== locals) {
+        if ('object' === typeof locals) {
+          // TODO: use something like http_build_query()
+          throw new Error('Not implemented yet!');
+        } else {
+          locals = String(locals);
+        }
+      }
+
       if (false !== update) {
-        router.updateURL(path);
+        router.updateURL(path, locals || null);
+        self.history.push({ to: path, q: locals });
+      } else if (history && history.replaceState) {
+        history.replaceState({ to: path, q: locals }, doc.title, path + (locals ? '?' + locals : ''));
       }
 
       return router.handleURL(path);
