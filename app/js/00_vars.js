@@ -6,7 +6,7 @@
 
       win = this.window,
       doc = this.document,
-      history = win.history,
+      hist = win.history,
       popevents = [],
       modules = [],
       exception,

@@ -25,9 +25,7 @@
 
 
     router.updateURL = function(path, query) {
-      if (history && history.pushState) {
-        history.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
-      }
+      hist.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
     };
 
     router.getHandler = function(name) {
@@ -47,8 +45,8 @@
       if (false !== update) {
         router.updateURL(path, locals || null);
         self.history.push({ to: path, q: locals });
-      } else if (history && history.replaceState) {
-        history.replaceState({ to: path, q: locals }, doc.title, path + (locals ? '?' + locals : ''));
+      } else {
+        hist.replaceState({ to: path, q: locals }, doc.title, path + (locals ? '?' + locals : ''));
       }
 
       return router.handleURL(path);
