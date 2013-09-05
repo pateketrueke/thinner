@@ -3480,369 +3480,385 @@ window.RSVP = requireModule("rsvp");
   exports.Router = Router;
 })(window, window.RouteRecognizer, window.RSVP);
 
-(function (global, doc) {
+(function (undefined) {
   
 
-  var App = (function (undefined) {
-
-    // static
-    var default_binding, default_mixin, default_elem, size_of;
-
-
-    // context
-    default_binding = function (self, mixin) {
-      var key,
-          out = {};
-
-      if ('function' === typeof mixin) {
-        return function () {
-          return mixin.apply(self, arguments);
-        };
-      }
-
-      for (key in mixin) {
-        out[key] = default_binding(self, mixin[key]);
-      }
-
-      return out;
-    };
-
-
-    // models
-    default_mixin = function (params) { return params; };
-
-
-    // DOM
-    default_elem = function (tag) {
-      return doc.createElement && doc.createElement(tag);
-    };
-
-
-    // obj.length
-    size_of = function (set) {
-      var index,
-          length = 0;
-
-      for (index in set) {
-        length += parseInt(set.hasOwnProperty(index), 10);
-      }
-
-      return length;
-    };
-
-
-    // instance
-    return function (path) {
-      // private
-      var exception, instance, matcher, loader, router,
-          default_path = path || doc.location.pathname,
-          default_link,
-          link_params,
-          url_params,
-          redirect,
-          popstate;
-
-
-      // router.js
-      router = new Router();
-
-
-      // links
-      link_params = function (path, params, update) {
-        if ('boolean' === typeof params) {
-          update = params;
-          params = undefined;
-        }
-
-        if (String(path).charAt(0) !== '/') {
-          path = instance.context.url(path, params || {});
-        }
-
-        update = params && params.update || update;
-        update = null == update ? true : update;
-
-        return [path, params || {}, update];
-      };
-
-      redirect = function (to) {
-        return function (e) {
-          if (e && e.preventDefault) {
-            e.preventDefault();
-          }
-
-          instance.context.go(to);
-
-          return false;
-        };
-      };
-
-      popstate = function (e) {
-        if (e.state && e.state.to) {
-          router.handleURL(e.state.to);
-        } else {
-          throw new Error('<' + String(e.state) + '> unknown path!');
-        }
-      };
-
-
-      // UJS
-      default_link = function (path, params) {
-        var a = default_elem('a'),
-            attribute,
-            href;
-
-        url_params = link_params(path, params);
-        href = url_params.shift();
-        params = url_params.shift();
-        a.innerHTML = path;
-        a.href = href;
-
-        // FIX: IE/PhantomJS (?)
-        if (! a.click || 'function' !== typeof a.click) {
-          a.click = redirect(href);
-        } else if (a.addEventListener) {
-          a.addEventListener('click', redirect(href), false);
-        } else if (a.attachEvent) {
-          a.attachEvent('onclick', redirect(href));
-        } else {
-          a.onclick = redirect(href);
-        }
-
-        for (attribute in params) {
-          a[attribute] = params[attribute];
-        }
-
-        return a;
-      };
-
-
-      // binding
-      matcher = function (routes) {
-        var key,
-            self,
-            handler,
-            handlers = {};
-
-        self = this;
-
-        router.map(function(match) {
-          handlers = routes.apply(self, [match]) || {};
-        });
-
-        for (key in handlers) {
-          handler = handlers[key];
-          this[key] = typeof handler === 'function' ? { setup: handler } : handler;
-
-          if (! ('model' in this[key])) {
-            this[key].model = default_mixin;
-          }
-
-          router.handlers[key] = default_binding(instance.context, this[key]);
-        }
-      };
-
-
-      // methods
-      loader = function (modules) {
-        var module,
-            klass,
-            out = {};
-
-        for (module in modules) {
-          if ('function' !== typeof modules[module]) {
-            throw new Error('<' + ('string' === typeof module ? module : modules[module]) + '> is not a module!');
-          }
-
-          klass = String(modules[module]);
-          klass = /function\s(.+?)\b/.exec(klass)[1] || null;
-
-          module = new modules[module](instance);
-
-          if (! module.initialize_module || 'function' !== typeof module.initialize_module) {
-            throw new Error('<' + klass + '#initialize_module> is missing!');
-          }
-
-          instance.context.send(module.initialize_module, { draw: default_binding(module, matcher) });
-
-          out[klass] = module;
-        }
-
-        return out;
-      };
-
-
-      // public
-      instance = {
-        context: {
-          // router.js
-          router: router,
-
-          // locals (?)
-          history: [],
-          globals: {},
-          helpers: {},
-          modules: {},
-
-          // API
-          send: function (partial, params) {
-            var length,
-                retval,
-                index = 0;
-
-            partial = 'object' === typeof partial && partial.length ? partial : [partial];
-            params = 'object' === typeof params && params.length === undefined ? params : {};
-
-            length = partial.length;
-
-            for (; index < length; index += 1) {
-              retval = partial[index].apply(instance.context, [params]);
-            }
-
-            return retval;
-          },
-
-          link: function (path, params, update) { return default_link(path, params, update); },
-
-          url: function (name, params) {
-            try {
-              return router.recognizer.generate(name, params);
-            } catch (exception) {
-              throw new Error('<' + name + '> route not found or missing params!');
-            }
-          },
-
-          go: function (path, params, update) {
-            var locals;
-
-            url_params = link_params(path, params, update);
-
-            params = url_params[1] || {};
-            update = url_params[2];
-
-            locals = params.locals;
-
-            delete params.locals;
-
-            return path.charAt(0) === '/' ? router.redirectURL(path, update, locals)
-              : update ? router.redirectURL(url_params[0], true, locals)
-              : ! size_of(params) ? router.transitionTo(path)
-              : router.transitionTo(path, params);
-          }
-        },
-
-        run: function () {
-          if (0 === size_of(this.context.modules)) {
-            throw new Error('<App#load> cannot run without modules!');
-          }
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-          return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || undefined);
-=======
-          return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || null);
->>>>>>> Adds missing features; dump 0.4.2
-=======
-          return router.redirectURL(default_path, false, doc.location.search.split('?')[1] || undefined);
->>>>>>> Adds: internal history stack, query string, url-handling fixes
-        },
-
-        load: function (modules) {
-          var index,
-              module;
-
-          if ('object' !== typeof modules) {
-            modules = modules && [modules];
-          }
-
-          if (! modules || 0 === modules.length) {
-            throw new Error('<App#load> require some modules!');
-          }
-
-          modules = loader(modules);
-
-          for (index in modules) {
-            if (this.context.modules[index]) {
-              throw new Error('<' + index + '> module already loaded!');
-            }
-
-            this.context.modules[index] = modules[index];
-          }
-
-          return this;
-        }
-      };
-
-
-      // construct
-      router.handlers = {};
-
-      router.updateURL = function(path, query) {
-        if (global.history && global.history.pushState) {
-          global.history.pushState({ to: path, q: query }, null, path + (query ? '?' + query : ''));
-        }
-      };
-
-      router.getHandler = function(name) {
-        return router.handlers[name] || {};
-      };
-
-      router.redirectURL = function(path, update, locals) {
-        if (undefined !== locals) {
-          if ('object' === typeof locals) {
-            // TODO: use something like http_build_query()
-            throw new Error('Not implemented yet!');
-          } else {
-            locals = String(locals);
-          }
-        }
-
-
-        if (false !== update) {
-          router.updateURL(path, locals || null);
-          instance.context.history.push({ to: path, q: locals });
-        } else if (global.history && global.history.replaceState) {
-          global.history.replaceState({ to: path, q: locals }, null, path + (locals ? '?' + locals : ''));
-        }
-
-        return router.handleURL(path);
-      };
-
-
-      if (global.addEventListener) {
-        global.addEventListener('popstate', popstate);
-      } else if (global.attachEvent) {
-        global.attachEvent('popstate', popstate);
-      } else {
-        global.onpopstate = popstate;
-      }
-
-      return instance;
-    };
-  })();
-
-
-  // helpers (?)
-  App.modules = function () {
-    var module,
-        list = {};
-
-    for (module in App) {
-      if (module.charAt(0) === module.charAt(0).toUpperCase()) {
-        list[module] = App[module];
-      }
+  // shortcuts
+  var Mohawk,
+
+      win = this.window,
+      doc = this.document,
+      history = win.history,
+      popevents = [],
+      modules = [],
+      exception,
+      running;
+
+
+  // default hooks
+  var grow = function (from, handler) {
+    if (! ('model' in handler)) {
+      handler.model = proxy;
     }
 
-    return list;
+    return handle(from.context, handler);
   };
 
 
-  // export
-  if ('undefined' !== typeof module && module.exports) {
-    module.exports = App;
-  } else if ('function' === typeof define && define.amd) {
-    define(function () { return App; });
-  } else {
-    global.App = App;
-  }
+  // nice handlers
+  var camelize = function (str) {
+    return str.replace(/([._-][a-z])/g, function ($1) { return $1.substr(1).toUpperCase(); });
+  };
 
-})(window, document);
+
+  // remove handlers
+  var dispose = function (from, name, fn) {
+    return function () {
+      var retval = 'function' === typeof fn ? fn.apply(null, arguments) : undefined;
+
+      // only if can be created again
+      delete from.handlers[name];
+
+      return retval;
+    };
+  };
+
+
+  // bind handlers
+  var delegate = function (from, name) {
+    var handler;
+
+    handler = grow(from, new from.classes[name](from));
+    handler.exit = dispose(from, name, handler.exit || undefined);
+
+    return handler;
+  };
+
+
+  // object length
+  var count = function (set) {
+    var index,
+        length = 0;
+
+    for (index in set) {
+      length += parseInt(set.hasOwnProperty(index), 10);
+    }
+
+    return length;
+  };
+
+
+  // mixin for passing params
+  var proxy = function (params) { return params; };
+
+
+  // mixin for delegate handlers
+  var handle = function (self, mixin) {
+    var key,
+        out = {};
+
+    if ('function' === typeof mixin) {
+      return function () { return mixin.apply(self, arguments); };
+    }
+
+    for (key in mixin) {
+      out[key] = handle(self, mixin[key]);
+    }
+
+    return out;
+  };
+
+
+  // setup routing
+  var matcher = function (app) {
+    var self = this;
+
+    return function (fn) {
+      var handler,
+          handlers;
+
+      app.router.map(function(match) {
+        handlers = fn.apply(self, [match]);
+      });
+
+
+      // backward compatibility
+      if (handlers && 'object' === typeof handlers) {
+        for (handler in handlers) {
+          app.handlers[handler] = handlers[handler];
+        }
+      }
+    };
+  };
+
+
+  // normalize arguments for url()
+  var url_params = function (app, path, params, update) {
+    if ('boolean' === typeof params) {
+      update = params;
+      params = undefined;
+    }
+
+    if (String(path).charAt(0) !== '/') {
+      path = app.context.url(path, params || {});
+    }
+
+    update = params && params.update || update;
+    update = null == update ? true : update;
+
+    return [path, params || {}, update];
+  };
+
+
+  // main module loader
+  var initialize = function (app, modules) {
+    var module,
+        klass;
+
+    for (module in modules) {
+      if ('function' !== typeof modules[module]) {
+        throw new Error('<' + ('string' === typeof module ? module : modules[module]) + '> is not a module!');
+      }
+
+      klass = String(modules[module]);
+      klass = /function\s(.+?)\b/.exec(klass)[1] || undefined;
+
+      module = new modules[module](app);
+
+      if (! module.initialize_module || 'function' !== typeof module.initialize_module) {
+        throw new Error('<' + klass + '#initialize_module> is missing!');
+      }
+
+      if (app.modules[klass]) {
+        throw new Error('<' + klass + '> module already loaded!');
+      }
+
+      app.context.send(module.initialize_module, { draw: matcher.apply(module, [app]) });
+      app.modules[klass] = module;
+    }
+  };
+
+
+  // handle url changes
+  var popstate = function (app) {
+    return function (e) {
+      if (e.state && e.state.to) {
+        app.router.handleURL(e.state.to);
+      }
+    };
+  };
+
+
+  // cached objects
+  var broker = function (app, name) {
+    var klass = camelize(name);
+
+    // backward compatibility
+    if (app.handlers[name]) {
+      if ('function' === typeof app.handlers[name]) {
+        app.handlers[name] = { setup: app.handlers[name] };
+      }
+
+      if (! ('grown' in app.handlers[name])) {
+        app.handlers[name] = grow(app, app.handlers[name]);
+        app.handlers[name].grown = true;
+      }
+
+      return app.handlers[name];
+    }
+
+
+    if (! app.classes[klass]) {
+      throw new Error('<' + klass + '> undefined handler!');
+    }
+
+    if (! app.handlers[klass]) {
+      app.handlers[klass] = delegate(app, klass);
+    }
+
+    return app.handlers[klass];
+  };
+
+
+  // constructor
+  var Bind = function (ns) {
+
+    // instance
+    var app = this;
+
+
+    // API
+
+    this.history = [];
+    this.classes = {};
+
+    this.modules = {};
+    this.handlers = {};
+
+    this.context = {
+
+      globals: {},
+      helpers: {},
+
+      // apply this context
+      send: function (partial, params) {
+        var length,
+            retval,
+            index = 0;
+
+        partial = 'object' === typeof partial && partial.length ? partial : [partial];
+        params = 'object' === typeof params && params.length === undefined ? params : {};
+
+        length = partial.length;
+
+        for (; index < length; index += 1) {
+          retval = partial[index].apply(app.context, [params]);
+        }
+
+        return retval;
+      },
+
+      // assembly urls
+      url: function (name, params) {
+        return app.router.recognizer.generate(name, params);
+      },
+
+      // redirections
+      go: function (path, params, update) {
+        var args = url_params(app, path, params, update),
+            locals;
+
+        params = args[1] || {};
+        update = args[2];
+
+        locals = params.locals;
+        delete params.locals;
+
+        if (path.charAt(0) === '/') {
+          if (! app.router.recognizer.recognize(path)) {
+            throw new Error('<' + path + '> route not found!');
+          }
+
+          return app.router.redirectURL(path, update, locals);
+        } else {
+          return update ? app.router.redirectURL(args[0], true, locals)
+            : ! count(params) ? app.router.transitionTo(path)
+            : app.router.transitionTo(path, params);
+        }
+      }
+    };
+
+
+    // module loading
+    this.load = function (modules) {
+      var index,
+          module;
+
+      if ('object' !== typeof modules) {
+        modules = modules && [modules];
+      }
+
+      if (! modules || 0 === modules.length) {
+        throw new Error('That require some modules!');
+      }
+
+      initialize(app, modules);
+
+      return app;
+    };
+
+
+    // start
+    this.run = function (block) {
+      var klass,
+          module;
+
+      for (klass in ns) {
+        if (klass.charAt(0) === klass.charAt(0).toUpperCase()) {
+          app.load(ns[klass]);
+        } else {
+          app.classes[klass] = ns[klass];
+        }
+      }
+
+      if ('function' === typeof block) {
+        block.apply(app.context, [app]);
+      }
+
+      return app;
+    };
+
+  };
+
+
+  // exports magic
+  var start = function () {
+    var App = {},
+        self = new Bind(App),
+        router = new Router(),
+        module;
+
+    // router.js
+    self.router = router;
+
+    // load modules
+    for (module in modules) {
+      modules[module].apply(self.context, [App]);
+    }
+
+    // attach events
+    if (win.addEventListener) {
+      win.addEventListener('popstate', popstate(self));
+    } else if (win.attachEvent) {
+      win.attachEvent('popstate', popstate(self));
+    } else {
+      win.onpopstate = popstate(self);
+    }
+
+
+    router.updateURL = function(path, query) {
+      if (history && history.pushState) {
+        history.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
+      }
+    };
+
+    router.getHandler = function(name) {
+      return broker(self, name);
+    };
+
+    router.redirectURL = function(path, update, locals) {
+      if (undefined !== locals) {
+        if ('object' === typeof locals) {
+          // TODO: use something like http_build_query()
+          throw new Error('Not implemented yet!');
+        } else {
+          locals = String(locals);
+        }
+      }
+
+      if (false !== update) {
+        router.updateURL(path, locals || null);
+        self.history.push({ to: path, q: locals });
+      } else if (history && history.replaceState) {
+        history.replaceState({ to: path, q: locals }, doc.title, path + (locals ? '?' + locals : ''));
+      }
+
+      return router.handleURL(path);
+    };
+
+    return self;
+  };
+
+
+  // some isolation
+  this.Mohawk = function (block) {
+    modules.push(block);
+  };
+
+
+  // singleton
+  this.Mohawk.loader = function () {
+    return running ? running : running = start();
+  };
+
+}).call(this);
