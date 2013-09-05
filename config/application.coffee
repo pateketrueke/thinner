@@ -94,8 +94,11 @@ module.exports = lineman.config.extend "application",
         ]).compact()
 
     app:
-      src: "<%= files.js.app.files %>"
-      dest: "<%= files.js.app.concatenated %>"
+      options:
+        process: (src, filepath) ->
+          _(src.split "\n").map((line) -> line.replace(/^\/\//, '')).join "\n"
+      files:
+        "<%= files.js.app.concatenated %>": "<%= files.js.app.files %>"
 
   uglify:
     js:
