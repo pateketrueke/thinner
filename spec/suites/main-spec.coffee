@@ -57,10 +57,13 @@ describe 'Our application:', ->
         app.context.go('home').then done
 
       async.it 'should care about onpopstate events', (done) ->
+        app.context.go 'test'
         app.context.go '/some_path'
         history.back -1
         delay done, ->
-          expect(document.location.pathname).not.toEqual '/some_path'
+          path = document.location.pathname
+          expect(path).toEqual '/foo'
+          app.context.go '/'
 
       describe 'By the way:', ->
         it 'we can build our application routes with url()', ->
