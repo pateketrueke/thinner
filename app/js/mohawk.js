@@ -158,31 +158,13 @@
 
 
   // handle url changes
-  var popstate = function (e) {
-    var app,
-        index = popevents.length;
-
-    if (e.state && e.state.to) {
-      while (index) {
-        index -= 1;
-
-        if (e.state && e.state.to) {
-          app = popevents[index];
-          app.router.handleURL(e.state.to);
-        }
+  var popstate = function (app) {
+    return function (e) {
+      if (e.state && e.state.to) {
+        app.router.handleURL(e.state.to);
       }
-    }
+    };
   };
-
-
-  // all url changes
-  if (win.addEventListener) {
-    win.addEventListener('popstate', popstate);
-  } else if (win.attachEvent) {
-    win.attachEvent('popstate', popstate);
-  } else {
-    win.onpopstate = popstate;
-  }
 
 
   // cached objects
@@ -343,7 +325,14 @@
     }
 
     // attach events
-    popevents.push(self);
+    if (win.addEventListener) {
+      win.addEventListener('popstate', popstate(self));
+    } else if (win.attachEvent) {
+      win.attachEvent('popstate', popstate(self));
+    } else {
+      win.onpopstate = popstate(self);
+    }
+
 
     router.updateURL = function(path, query) {
       if (history && history.pushState) {
