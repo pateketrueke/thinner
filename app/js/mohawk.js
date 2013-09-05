@@ -2,14 +2,15 @@
   'use strict';
 
   // shortcuts
-  var Mohawk = {},
+  var Mohawk,
 
       win = this.window,
       doc = this.document,
       history = win.history,
       popevents = [],
-      modules = {},
-      exception;
+      modules = [],
+      exception,
+      running;
 
 
   // default hooks
@@ -185,7 +186,7 @@
 
 
   // cached objects
-  Mohawk.broker = function (app, name) {
+  var broker = function (app, name) {
     var klass = camelize(name);
 
     // backward compatibility
@@ -216,9 +217,9 @@
 
 
   // constructor
-  Mohawk.bind = function (ns) {
+  var Bind = function (ns) {
 
-    // locals
+    // instance
     var app = this;
 
 
@@ -226,7 +227,10 @@
 
     this.history = [];
     this.classes = {};
+
     this.modules = {};
+    this.handlers = {};
+
     this.context = {
 
       globals: {},
@@ -324,25 +328,18 @@
 
 
   // exports magic
-  this.run = function (block) {
+  var start = function () {
     var App = {},
-        self = new Mohawk.bind(App),
+        self = new Bind(App),
         router = new Router(),
-        length, index = 0,
         module;
 
-    // settings
-    self.handlers = {};
+    // router.js
     self.router = router;
 
     // load modules
     for (module in modules) {
-      length = modules[module].length;
-
-      while (index < length) {
-        modules[module][index].apply(self.context, [App]);
-        index += 1;
-      }
+      modules[module].apply(self.context, [App]);
     }
 
     // attach events
@@ -355,7 +352,7 @@
     };
 
     router.getHandler = function(name) {
-      return Mohawk.broker(self, name);
+      return broker(self, name);
     };
 
     router.redirectURL = function(path, update, locals) {
@@ -378,17 +375,19 @@
       return router.handleURL(path);
     };
 
-    return self.run(block);
+    return self;
   };
 
 
   // some isolation
-  this.module = function (name, block) {
-    if (! (name in modules)) {
-      modules[name] = [];
-    }
+  this.Mohawk = function (block) {
+    modules.push(block);
+  };
 
-    modules[name].push(block);
+
+  // singleton
+  this.Mohawk.loader = function () {
+    return running ? running : running = start();
   };
 
 }).call(this);

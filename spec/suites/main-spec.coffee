@@ -4,7 +4,7 @@ describe 'Our application:', ->
     expect(-> new Router).not.toThrow()
 
   describe 'Well.. when it runs,', ->
-    app = run(->)
+    app = Mohawk.loader().run(->)
 
     it 'will validate all their modules', ->
       expect(app.load).toThrow()
