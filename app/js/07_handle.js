@@ -8,8 +8,10 @@
       return function () { return mixin.apply(self, arguments); };
     }
 
-    for (key in mixin) {
-      out[key] = handle(self, mixin[key]);
+    if ('object' === typeof mixin) {
+      for (key in mixin) {
+        out[key] = handle(self, mixin[key]);
+      }
     }
 
     return out;
