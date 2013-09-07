@@ -5,5 +5,9 @@
       handler.model = proxy;
     }
 
+    if ('function' === typeof handler.actions) {
+      observe(from, handler);
+    }
+
     return handle(from.context, handler);
   };
