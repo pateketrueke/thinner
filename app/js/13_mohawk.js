@@ -1,6 +1,6 @@
 
   // constructor
-  mohawk = function (ns) {
+  var mohawk = function (ns) {
     var app;
 
     // delegate methods
