@@ -96,7 +96,7 @@ module.exports = lineman.config.extend "application",
     app:
       options:
         process: (src, filepath) ->
-          _(src.split "\n").map((line) -> line.replace(/^\/\//, '')).join "\n"
+          _(src.split "\n").map((line) -> line.replace(/^\/\/!/, '')).join "\n"
       files:
         "<%= files.js.app.concatenated %>": "<%= files.js.app.files %>"
 

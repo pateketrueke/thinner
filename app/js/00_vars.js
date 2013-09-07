@@ -1,5 +1,5 @@
-//(function (undefined) {
-//  'use strict';
+//!(function (undefined) {
+//!  'use strict';
 
   // shortcuts
   var Mohawk,
