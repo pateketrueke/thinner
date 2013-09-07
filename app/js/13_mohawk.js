@@ -1,9 +1,16 @@
 
   // constructor
-  var Bind = function (ns) {
+  Mohawk = function (ns) {
 
     // instance
     var app = this;
+
+    // delegate methods
+    var hook = function (method) {
+      return function () {
+        return attach.apply(null, [method].concat(slice.call(arguments)));
+      };
+    };
 
 
     // API
@@ -64,7 +71,13 @@
             : ! count(params) ? app.router.transitionTo(path)
             : app.router.transitionTo(path, params);
         }
-      }
+      },
+
+      // events
+
+      on: hook('on'),
+      off: hook('off'),
+      one: hook('one')
     };
 
 

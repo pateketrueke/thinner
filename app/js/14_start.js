@@ -2,7 +2,7 @@
   // exports magic
   var start = function () {
     var App = {},
-        self = new Bind(App),
+        self = new Mohawk(App),
         router = new Router(),
         module;
 
