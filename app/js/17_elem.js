@@ -1,5 +1,5 @@
 
-  // CSS selector
-  var elem = global.$ || global.jQuery || function () {
-    throw new Error('jQuery 1.9.1+ is required!');
+  // CSS selector/DOM utility
+  var elem = global.Zepto || global.jQuery || global.$ || function () {
+    throw new Error('jQuery-compatible library is required!');
   };
