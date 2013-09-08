@@ -44,7 +44,7 @@
 
       if (false !== update) {
         router.updateURL(path, locals || null);
-        self.history.push({ to: path, q: locals });
+        self.context.history.push({ to: path, q: locals });
       } else {
         hist.replaceState({ to: path, q: locals }, doc.title, path + (locals ? '?' + locals : ''));
       }

@@ -3,25 +3,17 @@
   var mohawk = function (ns) {
     var app;
 
-    // delegate methods
-    var hook = function (method) {
-      return function () {
-        return attach.apply(null, [method].concat(slice.call(arguments)));
-      };
-    };
-
-
     // instance
     return app = {
       // API
 
-      history: [],
       classes: {},
-
       modules: {},
       handlers: {},
 
       context: {
+
+        history: [],
 
         globals: {},
         helpers: {},
@@ -76,7 +68,7 @@
         // events
         on: hook('on'),
         off: hook('off'),
-        one: hook('one'),
+        one: hook('one')
       },
 
 
