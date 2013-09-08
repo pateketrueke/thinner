@@ -1,4 +1,4 @@
-Mohawk (App) ->
+mohawk (App) ->
   class App.Module
     initialize_module: (mapper) ->
       mapper.draw (match) ->
