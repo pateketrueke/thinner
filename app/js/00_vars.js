@@ -19,6 +19,9 @@
       current,
       root;
 
+  // extends
+  var methods = 'beforeModel model afterModel serialize events enter setup exit error willTransition'.split(' ');
+
   // utils
   var slice = Array.prototype.slice;
 
