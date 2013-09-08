@@ -1,26 +1,13 @@
 
-  // mixin for delegate handlers
+  // mixin for grown-up handlers
   var handle = function (self, mixin) {
-    var length = methods.length,
-        subkey,
-        key;
+    var key;
 
-    // loop all
+    // loop all methods
     if ('object' === typeof mixin) {
-      while (length--) {
-        key = methods[length];
-
-        if (key in mixin) {
-          if ('function' === typeof mixin[key]) {
-            mixin[key] = handle(self, mixin[key]);
-          } else {
-            // up to one-level depth
-            for (subkey in mixin[key]) {
-              if ('function' === typeof mixin[key][subkey]) {
-                mixin[key][subkey] = handle(self, mixin[key][subkey]);
-              }
-            }
-          }
+      for (key in mixin) {
+        if ('function' === typeof mixin[key]) {
+          mixin[key] = handle(self, mixin[key]);
         }
       }
     } else if ('function' === typeof mixin) {

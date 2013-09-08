@@ -10,7 +10,7 @@
       }
 
       if (! ('grown' in app.handlers[name])) {
-        app.handlers[name] = grow(app, app.handlers[name]);
+        app.handlers[name] = grow(app, app.handlers[name], true);
         app.handlers[name].grown = true;
       }
 
