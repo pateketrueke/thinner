@@ -1,5 +1,11 @@
 
   // CSS selector/DOM utility
-  var elem = global.Zepto || global.jQuery || global.$ || function () {
-    throw new Error('jQuery-compatible library is required!');
+  var elem = function () {
+    var $;
+
+    if (! ($ = global.Zepto || global.jQuery || global.$)) {
+      throw new Error('jQuery-compatible library is required!');
+    }
+
+    return $.apply($, arguments);
   };
