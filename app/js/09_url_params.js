@@ -1,14 +1,21 @@
 
   // normalize arguments for url()
-  var url_params = function (app, path, params, update) {
+  var url_params = function (path, params, update) {
     if ('boolean' === typeof params) {
       update = params;
       params = undefined;
     }
 
-    if (String(path).charAt(0) !== '/') {
-      path = app.context.url(path, params || {});
+    // history states
+    if ('object' === typeof path) {
+      params = path;
+      path = params.to || undefined;
+      params.locals = params.q || undefined;
+
+      delete params.to;
+      delete params.q;
     }
+
 
     update = params && params.update || update;
     update = null == update ? true : update;

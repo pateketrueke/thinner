@@ -43,11 +43,12 @@
 
         // redirections
         go: function (path, params, update) {
-          var args = url_params(app, path, params, update),
+          var args = url_params(path, params, update),
               locals;
 
           params = args[1] || {};
           update = args[2];
+          path = args[0];
 
           locals = params.locals;
           delete params.locals;
@@ -59,7 +60,7 @@
 
             return app.router.redirectURL(path, update, locals);
           } else {
-            return update ? app.router.redirectURL(args[0], true, locals)
+            return update ? app.router.redirectURL(app.context.url(path, params), true, locals)
               : ! count(params) ? app.router.transitionTo(path)
               : app.router.transitionTo(path, params);
           }
