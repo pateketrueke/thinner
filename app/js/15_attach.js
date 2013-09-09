@@ -1,5 +1,7 @@
 
   // all events
   var attach = function (evt) {
-    return root[evt].apply(root, slice.call(arguments, 1));
+    return function () {
+      return root[evt].apply(root, arguments);
+    };
   };

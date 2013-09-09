@@ -67,9 +67,9 @@
         },
 
         // events
-        on: hook('on'),
-        off: hook('off'),
-        one: hook('one')
+        on: attach('on'),
+        off: attach('off'),
+        one: attach('one')
       },
 
 
