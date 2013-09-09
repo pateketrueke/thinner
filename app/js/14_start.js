@@ -4,7 +4,7 @@
     var App = {},
         self = mohawk(App),
         router = new Router(),
-        module;
+        module, evt;
 
     // router.js
     self.router = router;
@@ -23,13 +23,20 @@
       win.onpopstate = popstate(self);
     }
 
+    // listen all events
+    while (evt = events.pop()) {
+      observe(evt);
+    }
+
 
     router.updateURL = function(path, query) {
       hist.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
     };
 
     router.getHandler = function(name) {
-      return broker(self, name);
+      current = broker(self, name);
+
+      return current;
     };
 
     router.redirectURL = function(path, update, locals) {

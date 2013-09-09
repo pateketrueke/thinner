@@ -5,11 +5,6 @@
       handler.model = proxy;
     }
 
-    if ('function' === typeof handler.actions) {
-      observe(from, handler);
-    }
-
-
     // delegate all event handlers
     if ('object' === typeof handler.events) {
       handler.events = handle(handler, handler.events);

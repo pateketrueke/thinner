@@ -1,12 +1,22 @@
 
   // event manager
-  var observe = function (app, handler) {
-    var evt;
+  var observe = function (evt) {
+    // listen to every event from root
+    root.on(evt + '.action', '.js-action', function (e) {
+      var key, action, handler, retval;
 
-    current = handler;
+      if (current && 'object' === typeof current.actions) {
+        key = elem(e.currentTarget).attr('data-action');
 
-    // listen all events
-    while (evt = events.pop()) {
-      attach.apply(app, [evt.toLowerCase(), evt]);
-    }
+        for (action in current.actions) {
+          handler = action.split('.')[0];
+
+          if (key === handler && action.lastIndexOf('.' + evt) > 0) {
+            retval = current[current.actions[action]].apply(current, arguments);
+          }
+
+          return retval;
+        }
+      }
+    });
   };

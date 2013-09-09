@@ -13,9 +13,9 @@
       running;
 
   // actions
-  var events = ('touchStart touchMove touchEnd touchCancel keyDown keyUp keyPress mouseDown mouseUp contextMenu ' +
-                'click doubleClick mouseMove focusIn focusOut mouseEnter mouseLeave submit input change ' +
-                'dragStart drag dragEnter dragLeave dragOver drop dragEnd').split(' '),
+  var events = ('touchstart touchmove touchend touchcancel keydown keyup keypress mousedown mouseup contextmenu ' +
+                'click doubleclick mousemove focusin focusout mouseenter mouseleave submit input change ' +
+                'dragstart drag dragenter dragleave dragover drop dragend').split(' '),
       current,
       root;
 

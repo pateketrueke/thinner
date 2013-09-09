@@ -1,4 +1,8 @@
 
+  // initialize root (?)
+  root = elem('body', doc);
+
+
   // some isolation
   this.mohawk = function (block) {
     modules.push(block);
