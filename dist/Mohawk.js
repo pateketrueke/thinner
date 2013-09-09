@@ -1209,7 +1209,7 @@ var define, requireModule;
 define("rsvp/all",
   ["rsvp/promise","exports"],
   function(__dependency1__, __exports__) {
-
+    
     var Promise = __dependency1__.Promise;
     /* global toString */
 
@@ -1258,10 +1258,11 @@ define("rsvp/all",
 define("rsvp/async",
   ["exports"],
   function(__exports__) {
-
+    
     var browserGlobal = (typeof window !== 'undefined') ? window : {};
     var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
     var async;
+    var local = (typeof global !== 'undefined') ? global : this;
 
     // old node
     function useNextTick() {
@@ -1312,7 +1313,7 @@ define("rsvp/async",
 
     function useSetTimeout() {
       return function(callback, arg) {
-        global.setTimeout(function() {
+        local.setTimeout(function() {
           callback(arg);
         }, 1);
       };
@@ -1334,7 +1335,7 @@ define("rsvp/async",
 define("rsvp/config",
   ["rsvp/async","exports"],
   function(__dependency1__, __exports__) {
-
+    
     var async = __dependency1__.async;
 
     var config = {};
@@ -1346,7 +1347,7 @@ define("rsvp/config",
 define("rsvp/defer",
   ["rsvp/promise","exports"],
   function(__dependency1__, __exports__) {
-
+    
     var Promise = __dependency1__.Promise;
 
     function defer() {
@@ -1371,7 +1372,7 @@ define("rsvp/defer",
 define("rsvp/events",
   ["exports"],
   function(__exports__) {
-
+    
     var Event = function(type, options) {
       this.type = type;
 
@@ -1472,7 +1473,7 @@ define("rsvp/events",
 define("rsvp/hash",
   ["rsvp/defer","exports"],
   function(__dependency1__, __exports__) {
-
+    
     var defer = __dependency1__.defer;
 
     function size(object) {
@@ -1526,7 +1527,7 @@ define("rsvp/hash",
 define("rsvp/node",
   ["rsvp/promise","rsvp/all","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
-
+    
     var Promise = __dependency1__.Promise;
     var all = __dependency2__.all;
 
@@ -1572,7 +1573,7 @@ define("rsvp/node",
 define("rsvp/promise",
   ["rsvp/config","rsvp/events","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
-
+    
     var config = __dependency1__.config;
     var EventTarget = __dependency2__.EventTarget;
 
@@ -1607,10 +1608,6 @@ define("rsvp/promise",
         resolved = true;
         reject(promise, value);
       };
-
-      this.on('promise:resolved', function(event) {
-        this.trigger('success', { detail: event.detail });
-      }, this);
 
       this.on('promise:failed', function(event) {
         this.trigger('error', { detail: event.detail });
@@ -1774,7 +1771,7 @@ define("rsvp/promise",
 define("rsvp/reject",
   ["rsvp/promise","exports"],
   function(__dependency1__, __exports__) {
-
+    
     var Promise = __dependency1__.Promise;
 
     function reject(reason) {
@@ -1789,7 +1786,7 @@ define("rsvp/reject",
 define("rsvp/resolve",
   ["rsvp/promise","exports"],
   function(__dependency1__, __exports__) {
-
+    
     var Promise = __dependency1__.Promise;
 
     function resolve(thenable) {
@@ -1804,7 +1801,7 @@ define("rsvp/resolve",
 define("rsvp/rethrow",
   ["exports"],
   function(__exports__) {
-
+    
     var local = (typeof global === "undefined") ? this : global;
 
     function rethrow(reason) {
@@ -1820,7 +1817,7 @@ define("rsvp/rethrow",
 define("rsvp",
   ["rsvp/events","rsvp/promise","rsvp/node","rsvp/all","rsvp/hash","rsvp/rethrow","rsvp/defer","rsvp/config","rsvp/resolve","rsvp/reject","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __exports__) {
-
+    
     var EventTarget = __dependency1__.EventTarget;
     var Promise = __dependency2__.Promise;
     var denodeify = __dependency3__.denodeify;
@@ -1852,7 +1849,7 @@ window.RSVP = requireModule("rsvp");
 })(window);
 
 (function(exports) {
-
+  
   var specials = [
     '/', '.', '*', '+', '?', '|',
     '(', ')', '[', ']', '{', '}', '\\'
@@ -2359,7 +2356,7 @@ window.RSVP = requireModule("rsvp");
 })(window);
 
 (function(exports, RouteRecognizer, RSVP) {
-
+  
   /**
     @private
 
@@ -3481,27 +3478,49 @@ window.RSVP = requireModule("rsvp");
 })(window, window.RouteRecognizer, window.RSVP);
 
 (function (undefined) {
-
+  
 
   // shortcuts
   var Mohawk,
 
       win = this.window,
       doc = this.document,
-      history = win.history,
+      hist = win.history,
       popevents = [],
       modules = [],
       exception,
       running;
 
+  // actions
+  var events = ('touchstart touchmove touchend touchcancel keydown keyup keypress mousedown mouseup contextmenu ' +
+                'click doubleclick mousemove focusin focusout mouseenter mouseleave submit input change ' +
+                'dragstart drag dragenter dragleave dragover drop dragend').split(' '),
+      root;
+
+  // utils
+  var slice = Array.prototype.slice;
+
+  // self
+  var global = this;
+
 
   // default hooks
-  var grow = function (from, handler) {
+  var grow = function (from, handler, is_plain) {
     if (! ('model' in handler)) {
       handler.model = proxy;
     }
 
-    return handle(from.context, handler);
+    // delegate all event handlers
+    if ('object' === typeof handler.events) {
+      handler.events = handle(handler, handler.events);
+    }
+
+    // backward compatibility
+    if (is_plain) {
+      handler = handle(from.context, handler);
+    }
+
+    return handler;
   };
 
 
@@ -3552,20 +3571,22 @@ window.RSVP = requireModule("rsvp");
   var proxy = function (params) { return params; };
 
 
-  // mixin for delegate handlers
+  // mixin for grown-up handlers
   var handle = function (self, mixin) {
-    var key,
-        out = {};
+    var key;
 
-    if ('function' === typeof mixin) {
+    // loop all methods
+    if ('object' === typeof mixin) {
+      for (key in mixin) {
+        if ('function' === typeof mixin[key]) {
+          mixin[key] = handle(self, mixin[key]);
+        }
+      }
+    } else if ('function' === typeof mixin) {
       return function () { return mixin.apply(self, arguments); };
     }
 
-    for (key in mixin) {
-      out[key] = handle(self, mixin[key]);
-    }
-
-    return out;
+    return mixin;
   };
 
 
@@ -3593,15 +3614,22 @@ window.RSVP = requireModule("rsvp");
 
 
   // normalize arguments for url()
-  var url_params = function (app, path, params, update) {
+  var url_params = function (path, params, update) {
     if ('boolean' === typeof params) {
       update = params;
       params = undefined;
     }
 
-    if (String(path).charAt(0) !== '/') {
-      path = app.context.url(path, params || {});
+    // history states
+    if ('object' === typeof path) {
+      params = path;
+      path = params.to || undefined;
+      params.locals = params.q || undefined;
+
+      delete params.to;
+      delete params.q;
     }
+
 
     update = params && params.update || update;
     update = null == update ? true : update;
@@ -3660,7 +3688,7 @@ window.RSVP = requireModule("rsvp");
       }
 
       if (! ('grown' in app.handlers[name])) {
-        app.handlers[name] = grow(app, app.handlers[name]);
+        app.handlers[name] = grow(app, app.handlers[name], true);
         app.handlers[name].grown = true;
       }
 
@@ -3681,111 +3709,118 @@ window.RSVP = requireModule("rsvp");
 
 
   // constructor
-  var Bind = function (ns) {
+  var mohawk = function (ns) {
+    var app;
 
     // instance
-    var app = this;
+    return app = {
+      // API
 
+      classes: {},
+      modules: {},
+      handlers: {},
 
-    // API
+      context: {
 
-    this.history = [];
-    this.classes = {};
+        history: [],
 
-    this.modules = {};
-    this.handlers = {};
+        globals: {},
+        helpers: {},
 
-    this.context = {
+        // apply this context
+        send: function (partial, params) {
+          var length,
+              retval,
+              index = 0;
 
-      globals: {},
-      helpers: {},
+          partial = 'object' === typeof partial && partial.length ? partial : [partial];
+          params = 'object' === typeof params && params.length === undefined ? params : {};
 
-      // apply this context
-      send: function (partial, params) {
-        var length,
-            retval,
-            index = 0;
+          length = partial.length;
 
-        partial = 'object' === typeof partial && partial.length ? partial : [partial];
-        params = 'object' === typeof params && params.length === undefined ? params : {};
-
-        length = partial.length;
-
-        for (; index < length; index += 1) {
-          retval = partial[index].apply(app.context, [params]);
-        }
-
-        return retval;
-      },
-
-      // assembly urls
-      url: function (name, params) {
-        return app.router.recognizer.generate(name, params);
-      },
-
-      // redirections
-      go: function (path, params, update) {
-        var args = url_params(app, path, params, update),
-            locals;
-
-        params = args[1] || {};
-        update = args[2];
-
-        locals = params.locals;
-        delete params.locals;
-
-        if (path.charAt(0) === '/') {
-          if (! app.router.recognizer.recognize(path)) {
-            throw new Error('<' + path + '> route not found!');
+          for (; index < length; index += 1) {
+            retval = partial[index].apply(app.context, [params]);
           }
 
-          return app.router.redirectURL(path, update, locals);
-        } else {
-          return update ? app.router.redirectURL(args[0], true, locals)
-            : ! count(params) ? app.router.transitionTo(path)
-            : app.router.transitionTo(path, params);
+          return retval;
+        },
+
+        // assembly urls
+        url: function (name, params) {
+          return app.router.recognizer.generate(name, params);
+        },
+
+        // redirections
+        go: function (path, params, update) {
+          var args = url_params(path, params, update),
+              locals;
+
+          params = args[1] || {};
+          update = args[2];
+          path = args[0];
+
+          locals = params.locals;
+          delete params.locals;
+
+          if (path.charAt(0) === '/') {
+            if (! app.router.recognizer.recognize(path)) {
+              throw new Error('<' + path + '> route not found!');
+            }
+
+            return app.router.redirectURL(path, update, locals);
+          } else {
+            return update ? app.router.redirectURL(app.context.url(path, params), true, locals)
+              : ! count(params) ? app.router.transitionTo(path)
+              : app.router.transitionTo(path, params);
+          }
+        },
+
+        // events
+        on: attach('on'),
+        off: attach('off'),
+        one: attach('one')
+      },
+
+
+      // module loading
+      load: function (modules) {
+        var index,
+            module;
+
+        if ('object' !== typeof modules) {
+          modules = modules && [modules];
         }
-      }
-    };
 
-
-    // module loading
-    this.load = function (modules) {
-      var index,
-          module;
-
-      if ('object' !== typeof modules) {
-        modules = modules && [modules];
-      }
-
-      if (! modules || 0 === modules.length) {
-        throw new Error('That require some modules!');
-      }
-
-      initialize(app, modules);
-
-      return app;
-    };
-
-
-    // start
-    this.run = function (block) {
-      var klass,
-          module;
-
-      for (klass in ns) {
-        if (klass.charAt(0) === klass.charAt(0).toUpperCase()) {
-          app.load(ns[klass]);
-        } else {
-          app.classes[klass] = ns[klass];
+        if (! modules || 0 === modules.length) {
+          throw new Error('That require some modules!');
         }
+
+        initialize(app, modules);
+
+        return app;
+      },
+
+
+      // start
+      run: function (block) {
+        var klass,
+            module;
+
+        for (klass in ns) {
+          if (klass.charAt(0) === klass.charAt(0).toUpperCase()) {
+            app.load(ns[klass]);
+          } else {
+            app.classes[klass] = ns[klass];
+          }
+        }
+
+        if ('function' === typeof block) {
+          block.apply(app.context, [app]);
+        }
+
+        return app;
       }
 
-      if ('function' === typeof block) {
-        block.apply(app.context, [app]);
-      }
-
-      return app;
     };
 
   };
@@ -3794,9 +3829,9 @@ window.RSVP = requireModule("rsvp");
   // exports magic
   var start = function () {
     var App = {},
-        self = new Bind(App),
+        self = mohawk(App),
         router = new Router(),
-        module;
+        module, evt;
 
     // router.js
     self.router = router;
@@ -3815,11 +3850,14 @@ window.RSVP = requireModule("rsvp");
       win.onpopstate = popstate(self);
     }
 
+    // listen all events
+    while (evt = events.pop()) {
+      observe(self, evt);
+    }
+
 
     router.updateURL = function(path, query) {
-      if (history && history.pushState) {
-        history.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
-      }
+      hist.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
     };
 
     router.getHandler = function(name) {
@@ -3838,9 +3876,9 @@ window.RSVP = requireModule("rsvp");
 
       if (false !== update) {
         router.updateURL(path, locals || null);
-        self.history.push({ to: path, q: locals });
-      } else if (history && history.replaceState) {
-        history.replaceState({ to: path, q: locals }, doc.title, path + (locals ? '?' + locals : ''));
+        self.context.history.push({ to: path, q: locals });
+      } else {
+        hist.replaceState({ to: path, q: locals }, doc.title, path + (locals ? '?' + locals : ''));
       }
 
       return router.handleURL(path);
@@ -3850,15 +3888,61 @@ window.RSVP = requireModule("rsvp");
   };
 
 
+  // all events
+  var attach = function (evt) {
+    return function () {
+      return root[evt].apply(root, arguments);
+    };
+  };
+
+
+  // event manager
+  var observe = function (app, evt) {
+    // listen to every event from root
+    root.on(evt + '.action', '.js-action', function (e) {
+      var key, action, handler, current, retval;
+
+      for (key in app.router.currentHandlerInfos) {
+        current = app.router.currentHandlerInfos[key].handler;
+
+        if ('object' === typeof current.actions) {
+          key = elem(e.currentTarget).attr('data-action');
+
+          for (action in current.actions) {
+            handler = action.split('.')[0];
+
+            if (key === handler && action.lastIndexOf('.' + evt) > 0) {
+              retval = current[current.actions[action]].apply(current, arguments);
+            }
+
+            return retval;
+          }
+        }
+      }
+    });
+  };
+
+
+  // CSS selector/DOM utility
+  var elem = global.Zepto || global.jQuery || global.$ || function () {
+    throw new Error('jQuery-compatible library is required!');
+  };
+
+
   // some isolation
-  this.Mohawk = function (block) {
+  this.mohawk = function (block) {
     modules.push(block);
   };
 
 
   // singleton
-  this.Mohawk.loader = function () {
-    return running ? running : running = start();
+  this.mohawk.loader = function () {
+    if (! running) {
+      root = elem('body', doc);
+      running = start();
+    }
+
+    return running;
   };
 
 }).call(this);
