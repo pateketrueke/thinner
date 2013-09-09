@@ -1,8 +1,4 @@
 
-  // initialize root (?)
-  root = elem('body', doc);
-
-
   // some isolation
   this.mohawk = function (block) {
     modules.push(block);
@@ -11,7 +7,12 @@
 
   // singleton
   this.mohawk.loader = function () {
-    return running ? running : running = start();
+    if (! running) {
+      root = elem('body', doc);
+      running = start();
+    }
+
+    return running;
   };
 
 //!}).call(this);
