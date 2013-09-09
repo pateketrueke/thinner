@@ -25,7 +25,7 @@
 
     // listen all events
     while (evt = events.pop()) {
-      observe(evt);
+      observe(self, evt);
     }
 
 
@@ -34,9 +34,7 @@
     };
 
     router.getHandler = function(name) {
-      current = broker(self, name);
-
-      return current;
+      return broker(self, name);
     };
 
     router.redirectURL = function(path, update, locals) {

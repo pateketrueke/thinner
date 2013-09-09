@@ -1,21 +1,25 @@
 
   // event manager
-  var observe = function (evt) {
+  var observe = function (app, evt) {
     // listen to every event from root
     root.on(evt + '.action', '.js-action', function (e) {
-      var key, action, handler, retval;
+      var key, action, handler, current, retval;
 
-      if (current && 'object' === typeof current.actions) {
-        key = elem(e.currentTarget).attr('data-action');
+      for (key in app.router.currentHandlerInfos) {
+        current = app.router.currentHandlerInfos[key].handler;
 
-        for (action in current.actions) {
-          handler = action.split('.')[0];
+        if ('object' === typeof current.actions) {
+          key = elem(e.currentTarget).attr('data-action');
 
-          if (key === handler && action.lastIndexOf('.' + evt) > 0) {
-            retval = current[current.actions[action]].apply(current, arguments);
+          for (action in current.actions) {
+            handler = action.split('.')[0];
+
+            if (key === handler && action.lastIndexOf('.' + evt) > 0) {
+              retval = current[current.actions[action]].apply(current, arguments);
+            }
+
+            return retval;
           }
-
-          return retval;
         }
       }
     });
