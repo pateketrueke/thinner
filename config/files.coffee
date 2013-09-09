@@ -25,6 +25,7 @@ module.exports = lineman.config.extend "files",
 
     testm:
       files: [
+        "vendor/components/jquery/jquery.js"
         "vendor/components/jasmine.async/lib/jasmine.async.js"
         "vendor/components/blanket/dist/jasmine/blanket_jasmine.js"
       ]
