@@ -4,19 +4,23 @@
     var retval, klass, err;
 
     try {
-      retval = block.apply(this, arguments);
+      retval = block() || defval;
     } catch (exception) {
-      err = 'isAborted' in exception ? 'errorHandler' : 'notFound';
+      err = ('object' === typeof exception && 'isAborted' in exception) ? 'errorHandler' : 'notFound';
 
       if ('function' === typeof app.classes[err]) {
         klass = new app.classes[err](app);
 
         if ('function' === typeof klass.exception) {
-          klass.exception.apply(klass, [exception]);
+          klass.exception(exception);
         }
       }
 
-      retval = defval;
+      if (! defval) {
+        throw exception.message || String(exception);
+      }
+
+      return defval;
     }
 
     return retval;
