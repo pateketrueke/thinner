@@ -17,7 +17,7 @@
       }
 
       if (! defval) {
-        throw exception.message || String(exception);
+        throw exception.message || exception;
       }
 
       return defval;
