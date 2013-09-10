@@ -17,7 +17,7 @@
       }
 
       if (! defval) {
-        throw exception.message || exception;
+        throw exception;
       }
 
       return defval;
