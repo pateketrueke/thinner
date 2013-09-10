@@ -10,6 +10,9 @@
       handler.events = handle(handler, handler.events);
     }
 
+    handler.events = handler.events || {};
+    handler.events.error = raise(from, handler.events.error || undefined);
+
     // backward compatibility
     if (is_plain) {
       handler = handle(from.context, handler);

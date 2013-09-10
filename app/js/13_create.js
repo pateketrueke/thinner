@@ -38,7 +38,9 @@
 
         // assembly urls
         url: function (name, params) {
-          return app.router.recognizer.generate(name, params);
+          return error(app, function () {
+            return app.router.recognizer.generate(name, params);
+          });
         },
 
         // redirections
@@ -53,17 +55,19 @@
           locals = params.locals;
           delete params.locals;
 
-          if (path.charAt(0) === '/') {
-            if (! app.router.recognizer.recognize(path)) {
-              throw new Error('<' + path + '> route not found!');
-            }
+          return error(app, function () {
+            if (path.charAt(0) === '/') {
+              if (! app.router.recognizer.recognize(path)) {
+                throw new Error('<' + path + '> route not found!');
+              }
 
-            return app.router.redirectURL(path, update, locals);
-          } else {
-            return update ? app.router.redirectURL(app.context.url(path, params), true, locals)
-              : ! count(params) ? app.router.transitionTo(path)
-              : app.router.transitionTo(path, params);
-          }
+              return app.router.redirectURL(path, update, locals);
+            } else {
+              return update ? app.router.redirectURL(app.context.url(path, params), true, locals)
+                : ! count(params) ? app.router.transitionTo(path)
+                : app.router.transitionTo(path, params);
+            }
+          }, RSVP.reject());
         },
 
         // events
