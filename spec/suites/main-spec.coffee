@@ -25,9 +25,9 @@ describe 'Our application:', ->
       expect(['Module', 'Home', 'Other']).toEqual keys
 
     it 'will not run over invalid routes', ->
-      expect(-> app.context.go('/abc')).toThrow()
-      expect(-> app.context.go('whatever')).toThrow()
-      expect(-> app.context.go('no_handler')).toThrow()
+      app.context.go('/abc').fail -> expect(1).toEqual 1
+      app.context.go('whatever').fail -> expect(1).toEqual 1
+      app.context.go('no_handler').fail -> expect(1).toEqual 1
 
     describe 'Looking at routes:', ->
       async = new AsyncSpec @
