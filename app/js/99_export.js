@@ -1,18 +1,22 @@
 
   // some isolation
-  this.mohawk = function (block) {
+  Mohawk = function (block) {
     modules.push(block);
   };
 
 
   // singleton
-  this.mohawk.loader = function () {
+  Mohawk.loader = function () {
     if (! running) {
-      root = elem('body', doc);
+      root = elem(settings.el || 'body', doc);
       running = start();
     }
 
     return running;
   };
+
+
+  // expose
+  this.mohawk = Mohawk;
 
 //!}).call(this);

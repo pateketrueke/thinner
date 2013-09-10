@@ -2,7 +2,7 @@
   // exports magic
   var start = function () {
     var App = {},
-        self = mohawk(App),
+        self = create(App),
         router = new Router(),
         module, evt;
 
@@ -24,7 +24,7 @@
     }
 
     // listen all events
-    while (evt = events.pop()) {
+    while (evt = settings.listen.pop()) {
       observe(self, evt);
     }
 
