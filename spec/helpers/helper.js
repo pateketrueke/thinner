@@ -4,7 +4,10 @@ root.context = root.describe;
 root.xcontext = root.xdescribe;
 root._$blanket = root._$jscoverage;
 
-root.element = function (name) { return document.createElement(name); };
+if (! document.body) {
+  document.body = document.createElement('body');
+  document.getElementsByTagName('html')[0].appendChild(document.body);
+}
 
 root.delay = function (resume, callback) {
   setTimeout(function () {
