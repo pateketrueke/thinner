@@ -21,6 +21,8 @@ mohawk (App) ->
       $('.js-action').remove()
 
   class App.myHandler
+    model: ->
+      throw 'fail'
 
   class App.notFound
     exception: (e) ->
