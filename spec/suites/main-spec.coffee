@@ -68,10 +68,6 @@ describe 'Our application:', ->
         app.context.go '/'
         done()
 
-      async.it 'should handle some routing errors', (done) ->
-        expect(-> app.context.go '/extra_failures', off).toThrow()
-        done()
-
       async.it 'should handle registered data-actions', (done) ->
         app.context.go('explode_this', false).then ->
           $('.js-action').trigger 'click'
