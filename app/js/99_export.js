@@ -16,6 +16,24 @@
   };
 
 
+  // settings
+  Mohawk.setup = function (block) {
+    var key,
+        params = {};
+
+    if ('function' === typeof block) {
+      block = block(params);
+      block = 'object' === typeof block ? block : params;
+    }
+
+    if ('object' === typeof block) {
+      for (key in block) {
+        settings[key] = block[key] || settings[key];
+      }
+    }
+  };
+
+
   // expose
   this.mohawk = Mohawk;
 
