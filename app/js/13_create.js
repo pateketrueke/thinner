@@ -8,7 +8,6 @@
       // API
 
       classes: {},
-      modules: {},
       handlers: {},
 
       context: {
