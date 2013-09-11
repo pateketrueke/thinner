@@ -66,7 +66,7 @@
                 : ! count(params) ? app.router.transitionTo(path)
                 : app.router.transitionTo(path, params);
             }
-          }, RSVP.reject());
+          });
         },
 
         // events
