@@ -72,6 +72,13 @@ describe 'Our application:', ->
         expect(-> app.context.go '/extra_failures', off).toThrow()
         done()
 
+      async.it 'should handle registered data-actions', (done) ->
+        app.context.go('explode_this', false).then ->
+          $('.js-action').trigger 'click'
+          expect(get()).toEqual 'xy'
+          app.context.go '/'
+          done()
+
       describe 'By the way:', ->
         it 'we can build our application routes with url()', ->
           expect(-> app.context.url 'show').toThrow()
