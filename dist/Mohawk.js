@@ -2098,19 +2098,31 @@ window.RSVP = requireModule("rsvp");
     return nextStates;
   }
 
-  function findHandler(state, path) {
+  function findHandler(state, path, queryParams) {
     var handlers = state.handlers, regex = state.regex;
     var captures = path.match(regex), currentCapture = 1;
     var result = [];
 
     for (var i=0, l=handlers.length; i<l; i++) {
-      var handler = handlers[i], names = handler.names, params = {};
+      var handler = handlers[i], names = handler.names, params = {},
+        watchedQueryParams = handler.queryParams || [],
+        activeQueryParams = {},
+        j, m;
 
-      for (var j=0, m=names.length; j<m; j++) {
+      for (j=0, m=names.length; j<m; j++) {
         params[names[j]] = captures[currentCapture++];
       }
-
-      result.push({ handler: handler.handler, params: params, isDynamic: !!names.length });
+      for (j=0, m=watchedQueryParams.length; j < m; j++) {
+        var key = watchedQueryParams[j];
+        if(queryParams[key]){
+          activeQueryParams[key] = queryParams[key];
+        }
+      }
+      var currentResult = { handler: handler.handler, params: params, isDynamic: !!names.length };
+      if(watchedQueryParams && watchedQueryParams.length > 0) {
+        currentResult.queryParams = activeQueryParams;
+      }
+      result.push(currentResult);
     }
 
     return result;
@@ -2165,7 +2177,11 @@ window.RSVP = requireModule("rsvp");
           regex += segment.regex();
         }
 
-        handlers.push({ handler: route.handler, names: names });
+        var handler = { handler: route.handler, names: names };
+        if(route.queryParams) {
+          handler.queryParams = route.queryParams;
+        }
+        handlers.push(handler);
       }
 
       if (isEmpty) {
@@ -2217,12 +2233,61 @@ window.RSVP = requireModule("rsvp");
 
       if (output.charAt(0) !== '/') { output = '/' + output; }
 
+      if (params && params.queryParams) {
+        output += this.generateQueryString(params.queryParams, route.handlers);
+      }
+
       return output;
+    },
+
+    generateQueryString: function(params, handlers) {
+      var pairs = [], allowedParams = [];
+      for(var i=0; i < handlers.length; i++) {
+        var currentParamList = handlers[i].queryParams;
+        if(currentParamList) {
+          allowedParams.push.apply(allowedParams, currentParamList);
+        }
+      }
+      for(var key in params) {
+        if (params.hasOwnProperty(key)) {
+          if(!~allowedParams.indexOf(key)) {
+            throw 'Query param "' + key + '" is not specified as a valid param for this route';
+          }
+          var value = params[key];
+          var pair = encodeURIComponent(key);
+          if(value !== true) {
+            pair += "=" + encodeURIComponent(value);
+          }
+          pairs.push(pair);
+        }
+      }
+
+      if (pairs.length === 0) { return ''; }
+
+      return "?" + pairs.join("&");
+    },
+
+    parseQueryString: function(queryString) {
+      var pairs = queryString.split("&"), queryParams = {};
+      for(var i=0; i < pairs.length; i++) {
+        var pair      = pairs[i].split('='),
+            key       = decodeURIComponent(pair[0]),
+            value     = pair[1] ? decodeURIComponent(pair[1]) : true;
+        queryParams[key] = value;
+      }
+      return queryParams;
     },
 
     recognize: function(path) {
       var states = [ this.rootState ],
-          pathLen, i, l;
+          pathLen, i, l, queryStart, queryParams = {};
+
+      queryStart = path.indexOf('?');
+      if (~queryStart) {
+        var queryString = path.substr(queryStart + 1, path.length);
+        path = path.substr(0, queryStart);
+        queryParams = this.parseQueryString(queryString);
+      }
 
       // DEBUG GROUP path
 
@@ -2250,7 +2315,7 @@ window.RSVP = requireModule("rsvp");
       var state = solutions[0];
 
       if (state && state.handlers) {
-        return findHandler(state, path);
+        return findHandler(state, path, queryParams);
       }
     }
   };
@@ -2275,18 +2340,35 @@ window.RSVP = requireModule("rsvp");
         if (callback.length === 0) { throw new Error("You must have an argument in the function passed to `to`"); }
         this.matcher.addChild(this.path, target, callback, this.delegate);
       }
+      return this;
+    },
+
+    withQueryParams: function() {
+      if (arguments.length === 0) { throw new Error("you must provide arguments to the withQueryParams method"); }
+      for (var i = 0; i < arguments.length; i++) {
+        if (typeof arguments[i] !== "string") {
+          throw new Error('you should call withQueryParams with a list of strings, e.g. withQueryParams("foo", "bar")');
+        }
+      }
+      var queryParams = [].slice.call(arguments);
+      this.matcher.addQueryParams(this.path, queryParams);
     }
   };
 
   function Matcher(target) {
     this.routes = {};
     this.children = {};
+    this.queryParams = {};
     this.target = target;
   }
 
   Matcher.prototype = {
     add: function(path, handler) {
       this.routes[path] = handler;
+    },
+
+    addQueryParams: function(path, params) {
+      this.queryParams[path] = params;
     },
 
     addChild: function(path, target, callback, delegate) {
@@ -2315,23 +2397,26 @@ window.RSVP = requireModule("rsvp");
     };
   }
 
-  function addRoute(routeArray, path, handler) {
+  function addRoute(routeArray, path, handler, queryParams) {
     var len = 0;
     for (var i=0, l=routeArray.length; i<l; i++) {
       len += routeArray[i].path.length;
     }
 
     path = path.substr(len);
-    routeArray.push({ path: path, handler: handler });
+    var route = { path: path, handler: handler };
+    if(queryParams) { route.queryParams = queryParams; }
+    routeArray.push(route);
   }
 
   function eachRoute(baseRoute, matcher, callback, binding) {
     var routes = matcher.routes;
+    var queryParams = matcher.queryParams;
 
     for (var path in routes) {
       if (routes.hasOwnProperty(path)) {
         var routeArray = baseRoute.slice();
-        addRoute(routeArray, path, routes[path]);
+        addRoute(routeArray, path, routes[path], queryParams[path]);
 
         if (matcher.children[path]) {
           eachRoute(routeArray, matcher.children[path], callback, binding);
@@ -2463,9 +2548,9 @@ window.RSVP = requireModule("rsvp");
      */
     retry: function() {
       this.abort();
-
       var recogHandlers = this.router.recognizer.handlersFor(this.targetName),
-          newTransition = performTransition(this.router, recogHandlers, this.providedModelsArray, this.params, this.data);
+          handlerInfos  = generateHandlerInfosWithQueryParams(this.router, recogHandlers, this.queryParams),
+          newTransition = performTransition(this.router, handlerInfos, this.providedModelsArray, this.params, this.queryParams, this.data);
 
       return newTransition;
     },
@@ -2490,6 +2575,10 @@ window.RSVP = requireModule("rsvp");
     method: function(method) {
       this.urlMethod = method;
       return this;
+    },
+
+    toString: function() {
+      return "Transition (sequence " + this.sequence + ")";
     }
   };
 
@@ -2634,8 +2723,21 @@ window.RSVP = requireModule("rsvp");
       @param {Array[Object]} contexts
       @return {Object} a serialized parameter hash
     */
+
     paramsForHandler: function(handlerName, contexts) {
-      return paramsForHandler(this, handlerName, slice.call(arguments, 1));
+      var partitionedArgs = extractQueryParams(slice.call(arguments, 1));
+      return paramsForHandler(this, handlerName, partitionedArgs[0], partitionedArgs[1]);
+    },
+
+    /**
+      This method takes a handler name and returns a list of query params
+      that are valid to pass to the handler or its parents
+
+      @param {String} handlerName
+      @return {Array[String]} a list of query parameters
+    */
+    queryParamsForHandler: function (handlerName) {
+      return queryParamsForHandler(this, handlerName);
     },
 
     /**
@@ -2649,12 +2751,41 @@ window.RSVP = requireModule("rsvp");
       @return {String} a URL
     */
     generate: function(handlerName) {
-      var params = paramsForHandler(this, handlerName, slice.call(arguments, 1));
+      var partitionedArgs = extractQueryParams(slice.call(arguments, 1)),
+        suppliedParams = partitionedArgs[0],
+        queryParams = partitionedArgs[1];
+
+      var params = paramsForHandler(this, handlerName, suppliedParams, queryParams),
+        validQueryParams = queryParamsForHandler(this, handlerName);
+
+      var missingParams = [];
+
+      for (var key in queryParams) {
+        if (queryParams.hasOwnProperty(key) && !~validQueryParams.indexOf(key)) {
+          missingParams.push(key);
+        }
+      }
+
+      if (missingParams.length > 0) {
+        var err = 'You supplied the params ';
+        err += missingParams.map(function(param) {
+          return '"' + param + "=" + queryParams[param] + '"';
+        }).join(' and ');
+
+        err += ' which are not valid for the "' + handlerName + '" handler or its parents';
+
+        throw new Error(err);
+      }
+
       return this.recognizer.generate(handlerName, params);
     },
 
     isActive: function(handlerName) {
-      var contexts = slice.call(arguments, 1);
+      var partitionedArgs   = extractQueryParams(slice.call(arguments, 1)),
+          contexts          = partitionedArgs[0],
+          queryParams       = partitionedArgs[1],
+          activeQueryParams  = {},
+          effectiveQueryParams = {};
 
       var targetHandlerInfos = this.targetHandlerInfos,
           found = false, names, object, handlerInfo, handlerObj;
@@ -2662,19 +2793,24 @@ window.RSVP = requireModule("rsvp");
       if (!targetHandlerInfos) { return false; }
 
       var recogHandlers = this.recognizer.handlersFor(targetHandlerInfos[targetHandlerInfos.length - 1].name);
-
       for (var i=targetHandlerInfos.length-1; i>=0; i--) {
         handlerInfo = targetHandlerInfos[i];
         if (handlerInfo.name === handlerName) { found = true; }
 
         if (found) {
-          if (contexts.length === 0) { break; }
+          var recogHandler = recogHandlers[i];
 
-          if (handlerInfo.isDynamic) {
+          merge(activeQueryParams, handlerInfo.queryParams);
+          if (queryParams !== false) {
+            merge(effectiveQueryParams, handlerInfo.queryParams);
+            mergeSomeKeys(effectiveQueryParams, queryParams, recogHandler.queryParams);
+          }
+
+          if (handlerInfo.isDynamic && contexts.length > 0) {
             object = contexts.pop();
 
             if (isParam(object)) {
-              var recogHandler = recogHandlers[i], name = recogHandler.names[0];
+              var name = recogHandler.names[0];
               if ("" + object !== this.currentParams[name]) { return false; }
             } else if (handlerInfo.context !== object) {
               return false;
@@ -2683,7 +2819,8 @@ window.RSVP = requireModule("rsvp");
         }
       }
 
-      return contexts.length === 0 && found;
+
+      return contexts.length === 0 && found && queryParamsEqual(activeQueryParams, effectiveQueryParams);
     },
 
     trigger: function(name) {
@@ -2706,7 +2843,7 @@ window.RSVP = requireModule("rsvp");
     a shared pivot parent route and other data necessary to perform
     a transition.
    */
-  function getMatchPoint(router, handlers, objects, inputParams) {
+  function getMatchPoint(router, handlers, objects, inputParams, queryParams) {
 
     var matchPoint = handlers.length,
         providedModels = {}, i,
@@ -2761,6 +2898,12 @@ window.RSVP = requireModule("rsvp");
         }
       }
 
+      // If there is an old handler, see if query params are the same. If there isn't an old handler,
+      // hasChanged will already be true here
+      if(oldHandlerInfo && !queryParamsEqual(oldHandlerInfo.queryParams, handlerObj.queryParams)) {
+          hasChanged = true;
+      }
+
       if (hasChanged) { matchPoint = i; }
     }
 
@@ -2794,6 +2937,28 @@ window.RSVP = requireModule("rsvp");
     return (typeof object === "string" || object instanceof String || !isNaN(object));
   }
 
+
+
+  /**
+    @private
+
+    This method takes a handler name and returns a list of query params
+    that are valid to pass to the handler or its parents
+
+    @param {Router} router
+    @param {String} handlerName
+    @return {Array[String]} a list of query parameters
+  */
+  function queryParamsForHandler(router, handlerName) {
+    var handlers = router.recognizer.handlersFor(handlerName),
+      queryParams = [];
+
+    for (var i = 0; i < handlers.length; i++) {
+      queryParams.push.apply(queryParams, handlers[i].queryParams || []);
+    }
+
+    return queryParams;
+  }
   /**
     @private
 
@@ -2805,12 +2970,16 @@ window.RSVP = requireModule("rsvp");
     @param {Array[Object]} objects
     @return {Object} a serialized parameter hash
   */
-  function paramsForHandler(router, handlerName, objects) {
+  function paramsForHandler(router, handlerName, objects, queryParams) {
 
     var handlers = router.recognizer.handlersFor(handlerName),
         params = {},
-        matchPoint = getMatchPoint(router, handlers, objects).matchPoint,
+        handlerInfos = generateHandlerInfosWithQueryParams(router, handlers, queryParams),
+        matchPoint = getMatchPoint(router, handlerInfos, objects).matchPoint,
+        mergedQueryParams = {},
         object, handlerObj, handler, names, i;
+
+    params.queryParams = {};
 
     for (i=0; i<handlers.length; i++) {
       handlerObj = handlers[i];
@@ -2830,7 +2999,13 @@ window.RSVP = requireModule("rsvp");
         // Serialize to generate params
         merge(params, serialize(handler, object, names));
       }
+      if (queryParams !== false) {
+        mergeSomeKeys(params.queryParams, router.currentQueryParams, handlerObj.queryParams);
+        mergeSomeKeys(params.queryParams, queryParams, handlerObj.queryParams);
+      }
     }
+
+    if (queryParamsEqual(params.queryParams, {})) { delete params.queryParams; }
     return params;
   }
 
@@ -2840,24 +3015,84 @@ window.RSVP = requireModule("rsvp");
     }
   }
 
+  function mergeSomeKeys(hash, other, keys) {
+    if (!other || !keys) { return; }
+    for(var i = 0; i < keys.length; i++) {
+      var key = keys[i], value;
+      if(other.hasOwnProperty(key)) {
+        value = other[key];
+        if(value === null || value === false || typeof value === "undefined") {
+          delete hash[key];
+        } else {
+          hash[key] = other[key];
+        }
+      }
+    }
+  }
+
+  /**
+    @private
+  */
+
+  function generateHandlerInfosWithQueryParams(router, handlers, queryParams) {
+    var handlerInfos = [];
+
+    for (var i = 0; i < handlers.length; i++) {
+      var handler = handlers[i],
+        handlerInfo = { handler: handler.handler, names: handler.names, context: handler.context, isDynamic: handler.isDynamic },
+        activeQueryParams = {};
+
+      if (queryParams !== false) {
+        mergeSomeKeys(activeQueryParams, router.currentQueryParams, handler.queryParams);
+        mergeSomeKeys(activeQueryParams, queryParams, handler.queryParams);
+      }
+
+      if (handler.queryParams && handler.queryParams.length > 0) {
+        handlerInfo.queryParams = activeQueryParams;
+      }
+
+      handlerInfos.push(handlerInfo);
+    }
+
+    return handlerInfos;
+  }
+
+  /**
+    @private
+  */
+  function createQueryParamTransition(router, queryParams) {
+    var currentHandlers = router.currentHandlerInfos,
+        currentHandler = currentHandlers[currentHandlers.length - 1],
+        name = currentHandler.name;
+
+    log(router, "Attempting query param transition");
+
+    return createNamedTransition(router, [name, queryParams]);
+  }
+
   /**
     @private
   */
   function createNamedTransition(router, args) {
-    var handlers = router.recognizer.handlersFor(args[0]);
+    var partitionedArgs     = extractQueryParams(args),
+      pureArgs              = partitionedArgs[0],
+      queryParams           = partitionedArgs[1],
+      handlers              = router.recognizer.handlersFor(pureArgs[0]),
+      handlerInfos          = generateHandlerInfosWithQueryParams(router, handlers, queryParams);
 
-    log(router, "Attempting transition to " + args[0]);
 
-    return performTransition(router, handlers, slice.call(args, 1), router.currentParams);
+    log(router, "Attempting transition to " + pureArgs[0]);
+
+    return performTransition(router, handlerInfos, slice.call(pureArgs, 1), router.currentParams, queryParams);
   }
 
   /**
     @private
   */
   function createURLTransition(router, url) {
-
     var results = router.recognizer.recognize(url),
-        currentHandlerInfos = router.currentHandlerInfos;
+        currentHandlerInfos = router.currentHandlerInfos,
+        queryParams = {};
 
     log(router, "Attempting URL transition to " + url);
 
@@ -2865,7 +3100,11 @@ window.RSVP = requireModule("rsvp");
       return errorTransition(router, new Router.UnrecognizedURLError(url));
     }
 
-    return performTransition(router, results, [], {});
+    for(var i = 0; i < results.length; i++) {
+      merge(queryParams, results[i].queryParams);
+    }
+
+    return performTransition(router, results, [], {}, queryParams);
   }
 
 
@@ -2949,8 +3188,9 @@ window.RSVP = requireModule("rsvp");
       checkAbort(transition);
 
       setContext(handler, context);
+      setQueryParams(handler, handlerInfo.queryParams);
 
-      if (handler.setup) { handler.setup(context); }
+      if (handler.setup) { handler.setup(context, handlerInfo.queryParams); }
       checkAbort(transition);
     } catch(e) {
       if (!(e instanceof Router.TransitionAborted)) {
@@ -2979,6 +3219,29 @@ window.RSVP = requireModule("rsvp");
     for (var i=0, l=handlerInfos.length; i<l; i++) {
       callback(handlerInfos[i]);
     }
+  }
+
+  /**
+    @private
+
+    determines if two queryparam objects are the same or not
+  **/
+  function queryParamsEqual(a, b) {
+    a = a || {};
+    b = b || {};
+    var checkedKeys = [], key;
+    for(key in a) {
+      if (!a.hasOwnProperty(key)) { continue; }
+      if(b[key] !== a[key]) { return false; }
+      checkedKeys.push(key);
+    }
+    for(key in b) {
+      if (!b.hasOwnProperty(key)) { continue; }
+      if (~checkedKeys.indexOf(key)) { continue; }
+      // b has a key not in a
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -3030,19 +3293,21 @@ window.RSVP = requireModule("rsvp");
           unchanged: []
         };
 
-    var handlerChanged, contextChanged, i, l;
+    var handlerChanged, contextChanged, queryParamsChanged, i, l;
 
     for (i=0, l=newHandlers.length; i<l; i++) {
       var oldHandler = oldHandlers[i], newHandler = newHandlers[i];
 
       if (!oldHandler || oldHandler.handler !== newHandler.handler) {
         handlerChanged = true;
+      } else if (!queryParamsEqual(oldHandler.queryParams, newHandler.queryParams)) {
+        queryParamsChanged = true;
       }
 
       if (handlerChanged) {
         handlers.entered.push(newHandler);
         if (oldHandler) { handlers.exited.unshift(oldHandler); }
-      } else if (contextChanged || oldHandler.context !== newHandler.context) {
+      } else if (contextChanged || oldHandler.context !== newHandler.context || queryParamsChanged) {
         contextChanged = true;
         handlers.updatedContext.push(newHandler);
       } else {
@@ -3095,21 +3360,45 @@ window.RSVP = requireModule("rsvp");
     if (handler.contextDidChange) { handler.contextDidChange(); }
   }
 
+  function setQueryParams(handler, queryParams) {
+    handler.queryParams = queryParams;
+    if (handler.queryParamsDidChange) { handler.queryParamsDidChange(); }
+  }
+
+
+  /**
+    @private
+
+    Extracts query params from the end of an array
+  **/
+
+  function extractQueryParams(array) {
+    var len = (array && array.length), head, queryParams;
+
+    if(len && len > 0 && array[len - 1] && array[len - 1].hasOwnProperty('queryParams')) {
+      queryParams = array[len - 1].queryParams;
+      head = slice.call(array, 0, len - 1);
+      return [head, queryParams];
+    } else {
+      return [array, null];
+    }
+  }
+
   /**
     @private
 
     Creates, begins, and returns a Transition.
    */
-  function performTransition(router, recogHandlers, providedModelsArray, params, data) {
+  function performTransition(router, recogHandlers, providedModelsArray, params, queryParams, data) {
 
-    var matchPointResults = getMatchPoint(router, recogHandlers, providedModelsArray, params),
+    var matchPointResults = getMatchPoint(router, recogHandlers, providedModelsArray, params, queryParams),
         targetName = recogHandlers[recogHandlers.length - 1].handler,
         wasTransitioning = false,
         currentHandlerInfos = router.currentHandlerInfos;
 
     // Check if there's already a transition underway.
     if (router.activeTransition) {
-      if (transitionsIdentical(router.activeTransition, targetName, providedModelsArray)) {
+      if (transitionsIdentical(router.activeTransition, targetName, providedModelsArray, queryParams)) {
         return router.activeTransition;
       }
       router.activeTransition.abort();
@@ -3124,6 +3413,7 @@ window.RSVP = requireModule("rsvp");
     transition.providedModelsArray = providedModelsArray;
     transition.params = matchPointResults.params;
     transition.data = data || {};
+    transition.queryParams = queryParams;
     router.activeTransition = transition;
 
     var handlerInfos = generateHandlerInfos(router, recogHandlers);
@@ -3190,11 +3480,16 @@ window.RSVP = requireModule("rsvp");
       var handlerObj = recogHandlers[i],
           isDynamic = handlerObj.isDynamic || (handlerObj.names && handlerObj.names.length);
 
-      handlerInfos.push({
+
+      var handlerInfo = {
         isDynamic: !!isDynamic,
         name: handlerObj.handler,
         handler: router.getHandler(handlerObj.handler)
-      });
+      };
+      if(handlerObj.queryParams) {
+        handlerInfo.queryParams = handlerObj.queryParams;
+      }
+      handlerInfos.push(handlerInfo);
     }
     return handlerInfos;
   }
@@ -3202,7 +3497,7 @@ window.RSVP = requireModule("rsvp");
   /**
     @private
    */
-  function transitionsIdentical(oldTransition, targetName, providedModelsArray) {
+  function transitionsIdentical(oldTransition, targetName, providedModelsArray, queryParams) {
 
     if (oldTransition.targetName !== targetName) { return false; }
 
@@ -3212,6 +3507,11 @@ window.RSVP = requireModule("rsvp");
     for (var i = 0, len = oldModels.length; i < len; ++i) {
       if (oldModels[i] !== providedModelsArray[i]) { return false; }
     }
+
+    if(!queryParamsEqual(oldTransition.queryParams, queryParams)) {
+      return false;
+    }
+
     return true;
   }
 
@@ -3225,11 +3525,12 @@ window.RSVP = requireModule("rsvp");
 
     var router = transition.router,
         seq = transition.sequence,
-        handlerName = handlerInfos[handlerInfos.length - 1].name;
+        handlerName = handlerInfos[handlerInfos.length - 1].name,
+        i;
 
     // Collect params for URL.
     var objects = [], providedModels = transition.providedModelsArray.slice();
-    for (var i = handlerInfos.length - 1; i>=0; --i) {
+    for (i = handlerInfos.length - 1; i>=0; --i) {
       var handlerInfo = handlerInfos[i];
       if (handlerInfo.isDynamic) {
         var providedModel = providedModels.pop();
@@ -3237,9 +3538,17 @@ window.RSVP = requireModule("rsvp");
       }
     }
 
-    var params = paramsForHandler(router, handlerName, objects);
+    var newQueryParams = {};
+    for (i = handlerInfos.length - 1; i>=0; --i) {
+      merge(newQueryParams, handlerInfos[i].queryParams);
+    }
+    router.currentQueryParams = newQueryParams;
+
+
+    var params = paramsForHandler(router, handlerName, objects, transition.queryParams);
 
     router.currentParams = params;
+
 
     var urlMethod = transition.urlMethod;
     if (urlMethod) {
@@ -3331,13 +3640,20 @@ window.RSVP = requireModule("rsvp");
 
       log(router, seq, handlerName + ": calling beforeModel hook");
 
-      var p = handler.beforeModel && handler.beforeModel(transition);
+      var args;
+
+      if (handlerInfo.queryParams) {
+        args = [handlerInfo.queryParams, transition];
+      } else {
+        args = [transition];
+      }
+
+      var p = handler.beforeModel && handler.beforeModel.apply(handler, args);
       return (p instanceof Transition) ? null : p;
     }
 
     function model() {
       log(router, seq, handlerName + ": resolving model");
-
       var p = getModel(handlerInfo, transition, handlerParams[handlerName], index >= matchPoint);
       return (p instanceof Transition) ? null : p;
     }
@@ -3352,7 +3668,15 @@ window.RSVP = requireModule("rsvp");
 
       transition.resolvedModels[handlerInfo.name] = context;
 
-      var p = handler.afterModel && handler.afterModel(context, transition);
+      var args;
+
+      if (handlerInfo.queryParams) {
+        args = [context, handlerInfo.queryParams, transition];
+      } else {
+        args = [context, transition];
+      }
+
+      var p = handler.afterModel && handler.afterModel.apply(handler, args);
       return (p instanceof Transition) ? null : p;
     }
 
@@ -3383,9 +3707,8 @@ window.RSVP = requireModule("rsvp");
     or use one of the models provided to `transitionTo`.
    */
   function getModel(handlerInfo, transition, handlerParams, needsUpdate) {
-
     var handler = handlerInfo.handler,
-        handlerName = handlerInfo.name;
+        handlerName = handlerInfo.name, args;
 
     if (!needsUpdate && handler.hasOwnProperty('context')) {
       return handler.context;
@@ -3396,7 +3719,13 @@ window.RSVP = requireModule("rsvp");
       return typeof providedModel === 'function' ? providedModel() : providedModel;
     }
 
-    return handler.model && handler.model(handlerParams || {}, transition);
+    if (handlerInfo.queryParams) {
+      args = [handlerParams || {}, handlerInfo.queryParams, transition];
+    } else {
+      args = [handlerParams || {}, transition, handlerInfo.queryParams];
+    }
+
+    return handler.model && handler.model.apply(handler, args);
   }
 
   /**
@@ -3429,10 +3758,12 @@ window.RSVP = requireModule("rsvp");
     // Normalize blank transitions to root URL transitions.
     var name = args[0] || '/';
 
-    if (name.charAt(0) === '/') {
+    if(args.length === 1 && args[0].hasOwnProperty('queryParams')) {
+      return createQueryParamTransition(router, args[0]);
+    } else if (name.charAt(0) === '/') {
       return createURLTransition(router, name);
     } else {
-      return createNamedTransition(router, args);
+      return createNamedTransition(router, slice.call(args));
     }
   }
 
@@ -3483,25 +3814,38 @@ window.RSVP = requireModule("rsvp");
   // shortcuts
   var Mohawk,
 
+      global = this,
+
       win = this.window,
       doc = this.document,
-      hist = win.history,
-      popevents = [],
-      modules = [],
+      hist = win.history;
+
+
+  // utils
+  var slice = Array.prototype.slice,
+
       exception,
       running;
+
 
   // actions
   var events = ('touchstart touchmove touchend touchcancel keydown keyup keypress mousedown mouseup contextmenu ' +
                 'click doubleclick mousemove focusin focusout mouseenter mouseleave submit input change ' +
-                'dragstart drag dragenter dragleave dragover drop dragend').split(' '),
-      root;
+                'dragstart drag dragenter dragleave dragover drop dragend').split(' ');
 
-  // utils
-  var slice = Array.prototype.slice;
+  // loaded modules
+  var modules = [];
 
-  // self
-  var global = this;
+
+  // application config
+  var settings = {
+    el: 'body',
+    listen: events
+  };
+
+
+  // ...
+  var root;
 
 
   // default hooks
@@ -3514,6 +3858,9 @@ window.RSVP = requireModule("rsvp");
     if ('object' === typeof handler.events) {
       handler.events = handle(handler, handler.events);
     }
+
+    handler.events = handler.events || {};
+    handler.events.error = raise(from, handler.events.error || undefined);
 
     // backward compatibility
     if (is_plain) {
@@ -3640,29 +3987,18 @@ window.RSVP = requireModule("rsvp");
 
   // main module loader
   var initialize = function (app, modules) {
-    var module,
-        klass;
+    var module;
 
     for (module in modules) {
       if ('function' !== typeof modules[module]) {
-        throw new Error('<' + ('string' === typeof module ? module : modules[module]) + '> is not a module!');
+        throw new Error('<' + modules[module] + '> is not a module!');
       }
-
-      klass = String(modules[module]);
-      klass = /function\s(.+?)\b/.exec(klass)[1] || undefined;
 
       module = new modules[module](app);
 
-      if (! module.initialize_module || 'function' !== typeof module.initialize_module) {
-        throw new Error('<' + klass + '#initialize_module> is missing!');
+      if ('function' === typeof module.initialize_module) {
+        app.context.send(module.initialize_module, { draw: matcher.apply(module, [app]) });
       }
-
-      if (app.modules[klass]) {
-        throw new Error('<' + klass + '> module already loaded!');
-      }
-
-      app.context.send(module.initialize_module, { draw: matcher.apply(module, [app]) });
-      app.modules[klass] = module;
     }
   };
 
@@ -3670,9 +4006,11 @@ window.RSVP = requireModule("rsvp");
   // handle url changes
   var popstate = function (app) {
     return function (e) {
-      if (e.state && e.state.to) {
-        app.router.handleURL(e.state.to);
-      }
+      return error(app, function () {
+        if (e.state && e.state.to) {
+          app.router.handleURL(e.state.to);
+        }
+      });
     };
   };
 
@@ -3709,7 +4047,7 @@ window.RSVP = requireModule("rsvp");
 
 
   // constructor
-  var mohawk = function (ns) {
+  var create = function (ns) {
     var app;
 
     // instance
@@ -3717,7 +4055,6 @@ window.RSVP = requireModule("rsvp");
       // API
 
       classes: {},
-      modules: {},
       handlers: {},
 
       context: {
@@ -3747,7 +4084,9 @@ window.RSVP = requireModule("rsvp");
 
         // assembly urls
         url: function (name, params) {
-          return app.router.recognizer.generate(name, params);
+          return error(app, function () {
+            return app.router.recognizer.generate(name, params);
+          });
         },
 
         // redirections
@@ -3762,17 +4101,19 @@ window.RSVP = requireModule("rsvp");
           locals = params.locals;
           delete params.locals;
 
-          if (path.charAt(0) === '/') {
-            if (! app.router.recognizer.recognize(path)) {
-              throw new Error('<' + path + '> route not found!');
-            }
+          return error(app, function () {
+            if (path.charAt(0) === '/') {
+              if (! app.router.recognizer.recognize(path)) {
+                throw new Error('<' + path + '> route not found!');
+              }
 
-            return app.router.redirectURL(path, update, locals);
-          } else {
-            return update ? app.router.redirectURL(app.context.url(path, params), true, locals)
-              : ! count(params) ? app.router.transitionTo(path)
-              : app.router.transitionTo(path, params);
-          }
+              return app.router.redirectURL(path, update, locals);
+            } else {
+              return update ? app.router.redirectURL(app.context.url(path, params), true, locals)
+                : ! count(params) ? app.router.transitionTo(path)
+                : app.router.transitionTo(path, params);
+            }
+          });
         },
 
         // events
@@ -3829,7 +4170,7 @@ window.RSVP = requireModule("rsvp");
   // exports magic
   var start = function () {
     var App = {},
-        self = mohawk(App),
+        self = create(App),
         router = new Router(),
         module, evt;
 
@@ -3851,7 +4192,7 @@ window.RSVP = requireModule("rsvp");
     }
 
     // listen all events
-    while (evt = events.pop()) {
+    while (evt = settings.listen.pop()) {
       observe(self, evt);
     }
 
@@ -3935,20 +4276,78 @@ window.RSVP = requireModule("rsvp");
   };
 
 
+  // event-error delegation
+  var raise = function (app, fn) {
+    return function (err, transition) {
+      return error(app, function () {
+        throw 'function' === typeof fn && fn(err, transition) || transition;
+      });
+    };
+  };
+
+
+  // error handler
+  var error = function (app, block) {
+    var retval, klass, err;
+
+    try {
+      retval = 'function' === typeof block && block();
+    } catch (exception) {
+      err = ('object' === typeof exception && 'isAborted' in exception) ? 'errorHandler' : 'notFound';
+
+      if ('function' === typeof app.classes[err]) {
+        klass = new app.classes[err](app);
+
+        // rethrow within possible
+        if ('function' === typeof klass.exception) {
+          throw klass.exception(exception);
+        }
+      } else {
+        throw exception;
+      }
+    }
+
+    return retval;
+  };
+
+
   // some isolation
-  this.mohawk = function (block) {
+  Mohawk = function (block) {
     modules.push(block);
   };
 
 
   // singleton
-  this.mohawk.loader = function () {
+  Mohawk.loader = function (config) {
     if (! running) {
-      root = elem('body', doc);
+      Mohawk.setup(config);
+      root = elem(settings.el || 'body', doc);
       running = start();
     }
 
     return running;
   };
+
+
+  // settings
+  Mohawk.setup = function (block) {
+    var key,
+        params = {};
+
+    if ('function' === typeof block) {
+      block = block.apply(params, [params]);
+      block = 'object' === typeof block ? block : params;
+    }
+
+    if ('object' === typeof block) {
+      for (key in block) {
+        settings[key] = block[key] || settings[key];
+      }
+    }
+  };
+
+
+  // expose
+  this.mohawk = Mohawk;
 
 }).call(this);
