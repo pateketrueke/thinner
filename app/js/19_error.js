@@ -12,12 +12,14 @@
         klass = new app.classes[err](app);
 
         if ('function' === typeof klass.exception) {
-          klass.exception(exception);
+          retval = klass.exception(exception);
         }
+      } else {
+        throw exception;
       }
 
       if (! defval) {
-        throw exception;
+        throw retval || exception;
       }
 
       return defval;
