@@ -6,8 +6,9 @@
 
 
   // singleton
-  Mohawk.loader = function () {
+  Mohawk.loader = function (config) {
     if (! running) {
+      Mohawk.setup(config);
       root = elem(settings.el || 'body', doc);
       running = start();
     }
