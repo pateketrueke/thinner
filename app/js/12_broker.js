@@ -3,6 +3,16 @@
   var broker = function (app, name) {
     var klass = camelize(name);
 
+    // classes first
+    if (app.classes[klass]) {
+      if (! app.handlers[klass]) {
+        app.handlers[klass] = delegate(app, klass);
+      }
+
+      return app.handlers[klass];
+    }
+
+
     // backward compatibility
     if (app.handlers[name]) {
       if ('function' === typeof app.handlers[name]) {
@@ -17,14 +27,5 @@
       return app.handlers[name];
     }
 
-
-    if (! app.classes[klass]) {
-      throw new Error('<' + klass + '> undefined handler!');
-    }
-
-    if (! app.handlers[klass]) {
-      app.handlers[klass] = delegate(app, klass);
-    }
-
-    return app.handlers[klass];
+    throw new Error('<' + klass + '> undefined handler!');
   };
