@@ -30,5 +30,9 @@
   };
 
 
+  // handled methods on error
+  var methods = 'enter setup serialize'.split(' ');
+
+
   // ...
   var root;
