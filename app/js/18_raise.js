@@ -1,9 +1,13 @@
 
   // event-error delegation
   var raise = function (app, fn) {
-    return function (err, transition) {
-      return error(app, function () {
-        throw 'function' === typeof fn && fn(err, transition) || transition;
+    var self = this;
+
+    return function () {
+      var args = arguments;
+
+      return error(app, function (e) {
+        return 'function' === typeof fn && fn.apply(self, args);
       });
     };
   };
