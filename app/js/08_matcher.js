@@ -9,6 +9,7 @@
 
       app.router.map(function(match) {
         handlers = fn.apply(self, [match]);
+        handlers = 'function' !== typeof handlers.to && handlers;
       });
 
 
