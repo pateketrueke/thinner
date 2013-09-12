@@ -35,6 +35,10 @@
       hist.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
     };
 
+    router.replaceURL = function (path, query) {
+      hist.replaceState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
+    };
+
     router.getHandler = function(name) {
       return broker(self, name);
     };
@@ -53,7 +57,7 @@
         router.updateURL(path, locals || null);
         self.context.history.push({ to: path, q: locals });
       } else {
-        hist.replaceState({ to: path, q: locals }, doc.title, path + (locals ? '?' + locals : ''));
+        router.replaceURL(path, locals || null);
       }
 
       return router.handleURL(path + (locals ? '?' + locals : ''));

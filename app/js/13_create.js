@@ -63,8 +63,8 @@
               return app.router.redirectURL(path, update, locals);
             } else {
               return update ? app.router.redirectURL(app.context.url(path, params), true, locals)
-                : ! count(params) ? app.router.transitionTo(path)
-                : app.router.transitionTo(path, params);
+                : ! count(params) ? app.router.replaceWith(path)
+                : app.router.replaceWith(path, params);
             }
           });
         },
