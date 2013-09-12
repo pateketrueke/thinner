@@ -4,7 +4,7 @@
     var App = {},
         self = create(App),
         router = new Router(),
-        module, evt;
+        module, events, evt;
 
     // router.js
     self.router = router;
@@ -24,7 +24,9 @@
     }
 
     // listen all events
-    while (evt = settings.listen.pop()) {
+    events = 'string' === typeof settings.listen ? settings.listen.split(' ') : settings.listen;
+
+    while (evt = events.pop()) {
       observe(self, evt);
     }
 
