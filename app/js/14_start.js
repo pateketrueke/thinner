@@ -54,7 +54,7 @@
         hist.replaceState({ to: path, q: locals }, doc.title, path + (locals ? '?' + locals : ''));
       }
 
-      return router.handleURL(path);
+      return router.handleURL(path + (locals ? '?' + locals : ''));
     };
 
     return self;
