@@ -10,7 +10,7 @@
       modules[module].apply(self.context, [App]);
     }
 
-    // attach events
+    // popstate events
     if (win.addEventListener) {
       win.addEventListener('popstate', popstate(self));
     } else if (win.attachEvent) {
