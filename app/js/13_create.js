@@ -104,7 +104,7 @@
             module;
 
         for (klass in ns) {
-          if (klass.charAt(0) === klass.charAt(0).toUpperCase()) {
+          if ('_' !== klass.charAt(0) && klass.charAt(0) === klass.charAt(0).toUpperCase()) {
             app.load(ns[klass]);
           } else {
             app.classes[klass] = ns[klass];
