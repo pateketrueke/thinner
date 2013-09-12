@@ -13,7 +13,7 @@
 
         // rethrow within possible
         if ('function' === typeof klass.exception) {
-          throw klass.exception(exception);
+          return klass.exception(exception);
         }
       } else {
         throw exception;
