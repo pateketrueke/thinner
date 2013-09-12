@@ -26,4 +26,4 @@ mohawk (App) ->
 
   class App.notFound
     exception: (e) ->
-      e
+      throw e
