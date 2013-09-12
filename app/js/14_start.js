@@ -3,11 +3,7 @@
   var start = function () {
     var App = {},
         self = create(App),
-        router = new Router(),
         module, events, evt;
-
-    // router.js
-    self.router = router;
 
     // load modules
     for (module in modules) {
@@ -31,19 +27,19 @@
     }
 
 
-    router.updateURL = function(path, query) {
+    self.router.updateURL = function(path, query) {
       hist.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
     };
 
-    router.replaceURL = function (path, query) {
+    self.router.replaceURL = function (path, query) {
       hist.replaceState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
     };
 
-    router.getHandler = function(name) {
+    self.router.getHandler = function(name) {
       return broker(self, name);
     };
 
-    router.redirectURL = function(path, update, locals) {
+    self.router.redirectURL = function(path, update, locals) {
       if (undefined !== locals) {
         if ('object' === typeof locals) {
           // TODO: use something like http_build_query()
@@ -54,13 +50,13 @@
       }
 
       if (false !== update) {
-        router.updateURL(path, locals || null);
+        self.router.updateURL(path, locals || null);
         self.context.history.push({ to: path, q: locals });
       } else {
-        router.replaceURL(path, locals || null);
+        self.router.replaceURL(path, locals || null);
       }
 
-      return router.handleURL(path + (locals ? '?' + locals : ''));
+      return self.router.handleURL(path + (locals ? '?' + locals : ''));
     };
 
     return self;
