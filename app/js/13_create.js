@@ -47,15 +47,11 @@
 
         // redirections
         go: function (path, params, update) {
-          var args = url_params(path, params, update),
-              locals;
+          var args = url_params(path, params, update);
 
           params = args[1] || {};
           update = args[2];
           path = args[0];
-
-          locals = params.locals;
-          delete params.locals;
 
           return error(app, function () {
             if (path.charAt(0) === '/') {
@@ -63,9 +59,9 @@
                 throw new Error('<' + path + '> route not found!');
               }
 
-              return app.router.redirectURL(path, update, locals);
+              return app.router.redirectURL(path, update);
             } else {
-              return update ? app.router.redirectURL(app.context.url(path, params), true, locals)
+              return update ? app.router.redirectURL(app.context.url(path, params), true)
                 : ! count(params) ? app.router.replaceWith(path)
                 : app.router.replaceWith(path, params);
             }

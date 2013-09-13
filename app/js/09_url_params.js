@@ -10,12 +10,9 @@
     if ('object' === typeof path) {
       params = path;
       path = params.to || undefined;
-      params.locals = params.q || undefined;
 
       delete params.to;
-      delete params.q;
     }
-
 
     update = params && params.update || update;
     update = null == update ? true : update;

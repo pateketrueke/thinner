@@ -27,36 +27,27 @@
     }
 
 
-    self.router.updateURL = function(path, query) {
-      hist.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
+    self.router.updateURL = function(path) {
+      hist.pushState({ to: path }, doc.title, path);
     };
 
-    self.router.replaceURL = function (path, query) {
-      hist.replaceState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
+    self.router.replaceURL = function (path) {
+      hist.replaceState({ to: path }, doc.title, path);
     };
 
     self.router.getHandler = function(name) {
       return broker(self, name);
     };
 
-    self.router.redirectURL = function(path, update, locals) {
-      if (undefined !== locals) {
-        if ('object' === typeof locals) {
-          // TODO: use something like http_build_query()
-          throw new Error('Not implemented yet!');
-        } else {
-          locals = String(locals);
-        }
-      }
-
+    self.router.redirectURL = function(path, update) {
       if (false !== update) {
-        self.router.updateURL(path, locals || null);
-        self.context.history.push({ to: path, q: locals });
+        self.router.updateURL(path);
+        self.context.history.push({ to: path });
       } else {
-        self.router.replaceURL(path, locals || null);
+        self.router.replaceURL(path);
       }
 
-      return self.router.handleURL(path + (locals ? '?' + locals : ''));
+      return self.router.handleURL(path);
     };
 
     return self;
