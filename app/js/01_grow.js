@@ -13,7 +13,7 @@
     }
 
     handler.events = handler.events || {};
-    handler.events.error = raise.apply(handler, [from, handler.events.error || undefined]);
+    handler.events.error = raise.call(handler, from, handler.events.error || undefined);
 
     // backward compatibility
     if (is_plain) {
@@ -23,7 +23,7 @@
 
     // error handling (?)
     for (key in methods) {
-      handler[methods[key]] = raise.apply(handler, [from, handler[methods[key]]]);
+      handler[methods[key]] = raise.call(handler, from, handler[methods[key]]);
     }
 
     return handler;

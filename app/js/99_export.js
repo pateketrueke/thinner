@@ -23,7 +23,7 @@
         params = {};
 
     if ('function' === typeof block) {
-      block = block.apply(params, [params]);
+      block = block.call(params, params);
       block = 'object' === typeof block ? block : params;
     }
 

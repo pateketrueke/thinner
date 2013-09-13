@@ -37,7 +37,7 @@
           length = partial.length;
 
           for (; index < length; index += 1) {
-            retval = partial[index].apply(app.context, [params]);
+            retval = partial[index].call(app.context, params);
           }
 
           return retval;
@@ -113,7 +113,7 @@
         }
 
         if ('function' === typeof block) {
-          block.apply(app.context, [app]);
+          block.call(app.context, app);
         }
 
         return app;
