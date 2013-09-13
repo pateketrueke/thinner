@@ -61,20 +61,13 @@ describe 'Our application:', ->
         app.context.go('home').then done
 
       async.it 'should care about onpopstate events', (done) ->
-        app.context.go 'test'
+        app.context.go { to: 'test' }
         app.context.go '/some_path'
         history.back -1
         delay done, ->
           path = document.location.pathname
           expect(path).toEqual '/foo'
           app.context.go '/'
-
-      async.it 'should handle query-params (?)', (done) ->
-        app.context.go { to: '/', q: 'xy' }
-        expect(document.location.search).toEqual '?xy'
-        expect(-> app.context.go 'home', { locals: { x: 'y' } }).toThrow()
-        app.context.go '/'
-        done()
 
       async.it 'should handle registered data-actions', (done) ->
         app.context.go('explode_this', false).then ->
