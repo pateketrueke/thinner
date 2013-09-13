@@ -13,10 +13,6 @@
       hist = win.history;
 
 
-  // utils
-  var slice = Array.prototype.slice;
-
-
   // loaded modules
   var modules = [];
 
