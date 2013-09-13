@@ -93,9 +93,11 @@ describe 'Our application:', ->
 
         it 'we can use send() as context mixin (?)', ->
           app.context.globals.foo = 'bar'
-          app.context.send ->
+          app.context.send (params) ->
             expect(@globals.foo).toEqual 'bar'
             expect(@globals.bar).toBeUndefined()
+            expect(params).toEqual { foo: 'bar', x: 'y' }
+          , { foo: 'bar' }, { x: 'y' }
 
           test = app.context.send [
             -> 'foo'
