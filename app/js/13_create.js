@@ -26,14 +26,14 @@
         },
 
         // apply this context
-        send: function (partial, params) {
+        send: function (partial) {
           var length,
               retval,
-              index = 0;
+              index = 0,
+              params = {};
 
           partial = 'object' === typeof partial && partial.length ? partial : [partial];
-          params = 'object' === typeof params && params.length === undefined ? params : {};
-
+          params = merge(true, slice.call(arguments, 1)) || {};
           length = partial.length;
 
           for (; index < length; index += 1) {
