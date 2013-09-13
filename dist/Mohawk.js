@@ -3815,6 +3815,8 @@ window.RSVP = requireModule("rsvp");
   var Mohawk,
 
       global = this,
+      exception,
+      running,
 
       win = this.window,
       doc = this.document,
@@ -3822,16 +3824,8 @@ window.RSVP = requireModule("rsvp");
 
 
   // utils
-  var slice = Array.prototype.slice,
+  var slice = Array.prototype.slice;
 
-      exception,
-      running;
-
-
-  // actions
-  var events = ('touchstart touchmove touchend touchcancel keydown keyup keypress mousedown mouseup contextmenu ' +
-                'click doubleclick mousemove focusin focusout mouseenter mouseleave submit input change ' +
-                'dragstart drag dragenter dragleave dragover drop dragend').split(' ');
 
   // loaded modules
   var modules = [];
@@ -3840,8 +3834,14 @@ window.RSVP = requireModule("rsvp");
   // application config
   var settings = {
     el: 'body',
-    listen: events
+    listen: 'touchstart touchmove touchend touchcancel keydown keyup keypress mousedown mouseup contextmenu ' +
+            'click doubleclick mousemove focusin focusout mouseenter mouseleave submit input change ' +
+            'dragstart drag dragenter dragleave dragover drop dragend'
   };
+
+
+  // handled methods on error
+  var methods = 'enter setup serialize'.split(' ');
 
 
   // ...
@@ -3850,6 +3850,8 @@ window.RSVP = requireModule("rsvp");
 
   // default hooks
   var grow = function (from, handler, is_plain) {
+    var key;
+
     if (! ('model' in handler)) {
       handler.model = proxy;
     }
@@ -3860,11 +3862,17 @@ window.RSVP = requireModule("rsvp");
     }
 
     handler.events = handler.events || {};
-    handler.events.error = raise(from, handler.events.error || undefined);
+    handler.events.error = raise.apply(handler, [from, handler.events.error || undefined]);
 
     // backward compatibility
     if (is_plain) {
       handler = handle(from.context, handler);
+    }
+
+
+    // error handling (?)
+    for (key in methods) {
+      handler[methods[key]] = raise.apply(handler, [from, handler[methods[key]]]);
     }
 
     return handler;
@@ -3947,6 +3955,7 @@ window.RSVP = requireModule("rsvp");
 
       app.router.map(function(match) {
         handlers = fn.apply(self, [match]);
+        handlers = 'function' !== typeof handlers.to && handlers;
       });
 
 
@@ -3971,12 +3980,9 @@ window.RSVP = requireModule("rsvp");
     if ('object' === typeof path) {
       params = path;
       path = params.to || undefined;
-      params.locals = params.q || undefined;
 
       delete params.to;
-      delete params.q;
     }
-
 
     update = params && params.update || update;
     update = null == update ? true : update;
@@ -4006,11 +4012,9 @@ window.RSVP = requireModule("rsvp");
   // handle url changes
   var popstate = function (app) {
     return function (e) {
-      return error(app, function () {
-        if (e.state && e.state.to) {
-          app.router.handleURL(e.state.to);
-        }
-      });
+      if (e.state && e.state.to) {
+        app.router.handleURL(e.state.to);
+      }
     };
   };
 
@@ -4018,6 +4022,16 @@ window.RSVP = requireModule("rsvp");
   // cached objects
   var broker = function (app, name) {
     var klass = camelize(name);
+
+    // classes first
+    if (app.classes[klass]) {
+      if (! app.handlers[klass]) {
+        app.handlers[klass] = delegate(app, klass);
+      }
+
+      return app.handlers[klass];
+    }
+
 
     // backward compatibility
     if (app.handlers[name]) {
@@ -4033,16 +4047,7 @@ window.RSVP = requireModule("rsvp");
       return app.handlers[name];
     }
 
-
-    if (! app.classes[klass]) {
-      throw new Error('<' + klass + '> undefined handler!');
-    }
-
-    if (! app.handlers[klass]) {
-      app.handlers[klass] = delegate(app, klass);
-    }
-
-    return app.handlers[klass];
+    throw new Error('<' + klass + '> undefined handler!');
   };
 
 
@@ -4052,6 +4057,9 @@ window.RSVP = requireModule("rsvp");
 
     // instance
     return app = {
+      // router.js
+      router: new Router(),
+
       // API
 
       classes: {},
@@ -4091,15 +4099,11 @@ window.RSVP = requireModule("rsvp");
 
         // redirections
         go: function (path, params, update) {
-          var args = url_params(path, params, update),
-              locals;
+          var args = url_params(path, params, update);
 
           params = args[1] || {};
           update = args[2];
           path = args[0];
-
-          locals = params.locals;
-          delete params.locals;
 
           return error(app, function () {
             if (path.charAt(0) === '/') {
@@ -4107,11 +4111,11 @@ window.RSVP = requireModule("rsvp");
                 throw new Error('<' + path + '> route not found!');
               }
 
-              return app.router.redirectURL(path, update, locals);
+              return app.router.redirectURL(path, update);
             } else {
-              return update ? app.router.redirectURL(app.context.url(path, params), true, locals)
-                : ! count(params) ? app.router.transitionTo(path)
-                : app.router.transitionTo(path, params);
+              return update ? app.router.redirectURL(app.context.url(path, params), true)
+                : ! count(params) ? app.router.replaceWith(path)
+                : app.router.replaceWith(path, params);
             }
           });
         },
@@ -4148,7 +4152,7 @@ window.RSVP = requireModule("rsvp");
             module;
 
         for (klass in ns) {
-          if (klass.charAt(0) === klass.charAt(0).toUpperCase()) {
+          if ('_' !== klass.charAt(0) && klass.charAt(0) === klass.charAt(0).toUpperCase()) {
             app.load(ns[klass]);
           } else {
             app.classes[klass] = ns[klass];
@@ -4171,18 +4175,14 @@ window.RSVP = requireModule("rsvp");
   var start = function () {
     var App = {},
         self = create(App),
-        router = new Router(),
-        module, evt;
-
-    // router.js
-    self.router = router;
+        module, events, evt;
 
     // load modules
     for (module in modules) {
       modules[module].apply(self.context, [App]);
     }
 
-    // attach events
+    // popstate events
     if (win.addEventListener) {
       win.addEventListener('popstate', popstate(self));
     } else if (win.attachEvent) {
@@ -4192,37 +4192,34 @@ window.RSVP = requireModule("rsvp");
     }
 
     // listen all events
-    while (evt = settings.listen.pop()) {
+    events = 'string' === typeof settings.listen ? settings.listen.split(' ') : settings.listen;
+
+    while (evt = events.pop()) {
       observe(self, evt);
     }
 
 
-    router.updateURL = function(path, query) {
-      hist.pushState({ to: path, q: query }, doc.title, path + (query ? '?' + query : ''));
+    self.router.updateURL = function(path) {
+      hist.pushState({ to: path }, doc.title, path);
     };
 
-    router.getHandler = function(name) {
+    self.router.replaceURL = function (path) {
+      hist.replaceState({ to: path }, doc.title, path);
+    };
+
+    self.router.getHandler = function(name) {
       return broker(self, name);
     };
 
-    router.redirectURL = function(path, update, locals) {
-      if (undefined !== locals) {
-        if ('object' === typeof locals) {
-          // TODO: use something like http_build_query()
-          throw new Error('Not implemented yet!');
-        } else {
-          locals = String(locals);
-        }
-      }
-
+    self.router.redirectURL = function(path, update) {
       if (false !== update) {
-        router.updateURL(path, locals || null);
-        self.context.history.push({ to: path, q: locals });
+        self.router.updateURL(path);
+        self.context.history.push({ to: path });
       } else {
-        hist.replaceState({ to: path, q: locals }, doc.title, path + (locals ? '?' + locals : ''));
+        self.router.replaceURL(path);
       }
 
-      return router.handleURL(path);
+      return self.router.handleURL(path);
     };
 
     return self;
@@ -4255,11 +4252,12 @@ window.RSVP = requireModule("rsvp");
             if (key === handler && action.lastIndexOf('.' + evt) > 0) {
               retval = current[current.actions[action]].apply(current, arguments);
             }
-
-            return retval;
           }
         }
       }
+
+      // after all
+      return retval;
     });
   };
 
@@ -4278,9 +4276,13 @@ window.RSVP = requireModule("rsvp");
 
   // event-error delegation
   var raise = function (app, fn) {
-    return function (err, transition) {
-      return error(app, function () {
-        throw 'function' === typeof fn && fn(err, transition) || transition;
+    var self = this;
+
+    return function () {
+      var args = arguments;
+
+      return error(app, function (e) {
+        return 'function' === typeof fn && fn.apply(self, args);
       });
     };
   };
@@ -4300,7 +4302,7 @@ window.RSVP = requireModule("rsvp");
 
         // rethrow within possible
         if ('function' === typeof klass.exception) {
-          throw klass.exception(exception);
+          return klass.exception(exception);
         }
       } else {
         throw exception;
