@@ -20,6 +20,11 @@
         globals: {},
         helpers: {},
 
+        // new objects
+        factory: function () {
+          return new arguments[0](app, merge(true, slice.call(arguments, 1)));
+        },
+
         // apply this context
         send: function (partial, params) {
           var length,
