@@ -33,6 +33,15 @@ describe 'Our application:', ->
       expect(-> app.context.go('whatever')).toThrow()
       expect(-> app.context.go('no_handler')).toThrow()
 
+    it 'will allow pass itself as context (?)', ->
+      obj = app.context.factory stdClass
+      expect(String(obj)).toEqual '__CLASS__'
+      expect(obj.router).toEqual app.router
+      expect(obj.send).toEqual app.context.send
+
+      obj = app.context.factory stdClass, x: 'y', a: 'b'
+      expect(obj.params).toEqual { x: 'y', a: 'b' }
+
     describe 'Looking at routes:', ->
       async = new AsyncSpec @
 
