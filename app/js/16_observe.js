@@ -17,10 +17,11 @@
             if (key === handler && action.lastIndexOf('.' + evt) > 0) {
               retval = current[current.actions[action]].apply(current, arguments);
             }
-
-            return retval;
           }
         }
       }
+
+      // after all
+      return retval;
     });
   };
