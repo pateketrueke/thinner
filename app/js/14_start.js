@@ -1,13 +1,13 @@
 
   // exports magic
   var start = function () {
-    var App = {},
-        self = create(App),
+    var app = {},
+        self = create(app),
         module, events, evt;
 
     // load modules
     for (module in modules) {
-      modules[module].call(self.context, App);
+      modules[module].call(self.context, app);
     }
 
     // popstate events
