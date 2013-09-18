@@ -31,6 +31,7 @@ module.exports = lineman.config.extend "files",
       ]
       concatenated: "generated/js/testm.js"
 
+
     vendor:
       files: [
         "vendor/js/**/*.js"
@@ -39,4 +40,5 @@ module.exports = lineman.config.extend "files",
       ]
       concatenated: "generated/js/vendor.js"
 
+    vendorDistDest: "dist/vendor"
     concatenatedSpec: "generated/js/spec/main.js"

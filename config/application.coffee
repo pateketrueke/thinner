@@ -8,7 +8,7 @@
 
 # lineman-lib-template config options:
 
-includeVendorInDistribution = true #set to true if you want your distribution to contain JS files in vendor/js
+includeVendorInDistribution = false #set to true if you want your distribution to contain JS files in vendor/js
 
 lineman = require(process.env["LINEMAN_MAIN"])
 grunt = lineman.grunt
@@ -16,6 +16,7 @@ _ = grunt.util._
 
 module.exports = lineman.config.extend "application",
   loadNpmTasks: [
+    "grunt-contrib-copy"
     "grunt-bower-task"
     "grunt-blanket"
   ]
@@ -24,7 +25,7 @@ module.exports = lineman.config.extend "application",
     common: ["bower:install"]
 
   appendTasks:
-    dist: ["concat:dist", "uglify:js"]
+    dist: ["concat:dist", "uglify:js", "copy"]
     common: ["concat:vendor", "concat:testm", "concat:spec", "concat:app"]
 
   removeTasks:
@@ -99,6 +100,12 @@ module.exports = lineman.config.extend "application",
           _(src.split "\n").map((line) -> line.replace(/^\/\/!/, '')).join "\n"
       files:
         "<%= files.js.app.concatenated %>": "<%= files.js.app.files %>"
+
+  copy:
+    vendor:
+      files: [
+        { expand: true, flatten: true, src: ["<%= files.js.vendor.files %>"], dest: "<%= files.js.vendorDistDest %>", filter: "isFile" }
+      ]
 
   uglify:
     js:
