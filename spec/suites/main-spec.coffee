@@ -13,14 +13,6 @@ describe 'Our application:', ->
     app = mohawk.loader().run(->)
     app.load [Home, Other]
 
-    it 'will delegate some events', ->
-      $('body').append '<data foo="bar"></data>'
-
-      app.context.on 'click.candy', '[foo]', -> set 'nothing'
-      app.context.on 'click.candy', 'data', -> expect(get()).toEqual 'nothing'
-
-      $('data').trigger('click').remove()
-
     it 'will validate all their modules', ->
       expect(app.load).toThrow()
       expect(-> app.load []).toThrow()

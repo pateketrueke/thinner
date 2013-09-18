@@ -71,12 +71,7 @@
                 : app.router.replaceWith(path, params);
             }
           });
-        },
-
-        // events
-        on: attach('on'),
-        off: attach('off'),
-        one: attach('one')
+        }
       },
 
 
