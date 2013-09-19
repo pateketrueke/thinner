@@ -11,13 +11,13 @@
 
         if ('object' === typeof current.actions) {
           el = elem(e.currentTarget);
-          data = el.data();
+          action = el.data('action');
 
-          for (action in current.actions) {
-            handler = action.split('.')[0];
+          for (data in current.actions) {
+            handler = data.split('.')[0];
 
-            if (data.action === handler && action.lastIndexOf('.' + evt) > 0) {
-              retval = current[current.actions[action]].apply(current, [e, el, data]);
+            if (action === handler && data.lastIndexOf('.' + evt) > 0) {
+              retval = current[current.actions[data]].apply(current, [e, el]);
             }
           }
         }
