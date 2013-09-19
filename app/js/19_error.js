@@ -1,23 +1,25 @@
 
   // error handler
-  var error = function (app, block) {
+  var error = function (app, block, defval) {
     var retval, klass, err;
 
     try {
       retval = 'function' === typeof block && block();
     } catch (exception) {
-      err = ('object' === typeof exception && 'isAborted' in exception) ? 'errorHandler' : 'notFound';
+      err = String(exception).indexOf('route not found') === -1 ? 'errorHandler' : 'notFound';
 
       if ('function' === typeof app.classes[err]) {
         klass = new app.classes[err](app);
 
         // rethrow within possible
         if ('function' === typeof klass.exception) {
-          return klass.exception(exception);
+          klass.exception(exception);
+
+          return defval;
         }
-      } else {
-        throw exception;
       }
+
+      throw exception;
     }
 
     return retval;
