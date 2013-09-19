@@ -6,7 +6,7 @@
     return function () {
       var args = arguments;
 
-      return error(app, function (e) {
+      return error(app, function () {
         return 'function' === typeof fn && fn.apply(self, args);
       });
     };

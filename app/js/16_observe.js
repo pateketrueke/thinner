@@ -17,7 +17,7 @@
             handler = data.split('.')[0];
 
             if (action === handler && data.lastIndexOf('.' + evt) > 0) {
-              retval = current[current.actions[data]].apply(current, [e, el]);
+              retval = raise.call(current, app, current[current.actions[data]])(e, el);
             }
           }
         }
