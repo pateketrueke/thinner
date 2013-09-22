@@ -47,6 +47,7 @@ module.exports = lineman.config.extend "application",
   clean:
     js:
       src: [
+        "dist"
         "coverage"
         "vendor/components"
         "<%= files.coffee.generated %>"
@@ -104,7 +105,10 @@ module.exports = lineman.config.extend "application",
   copy:
     vendor:
       files: [
-        { expand: true, flatten: true, src: ["<%= files.js.vendor.files %>"], dest: "<%= files.js.vendorDistDest %>", filter: "isFile" }
+        { expand: true, flatten: true, src: [
+          "<%= files.js.vendor.files %>"
+          "<%= files.js.bundle.files %>"
+        ], dest: "<%= files.js.vendorDistDest %>", filter: "isFile" }
       ]
 
   uglify:

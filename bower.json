@@ -16,6 +16,8 @@
     "router.js": "https://github.com/tildeio/router.js.git",
     "jasmine.async": "~0.1.0",
     "blanket": "~1.1.5",
-    "jquery": "~1.10.2"
+    "jquery": "~1.10.2",
+    "ractive": "~0.3.6",
+    "lodash": "~2.0.0"
   }
 }
