@@ -10,8 +10,8 @@
 
       module = new modules[module](app);
 
-      if ('function' === typeof module.initialize_module) {
-        module.initialize_module.call(app.context, { draw: matcher.call(module, app) }, module);
+      if ('function' === typeof module.define) {
+        module.define.call(app.context, module);
       }
     }
   };
