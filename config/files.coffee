@@ -32,8 +32,7 @@ module.exports = lineman.config.extend "files",
 
     bundle:
       files: [
-        "vendor/components/lodash/dist/lodash.js"
-        "vendor/components/ractive/build/Ractive.js"
+        "vendor/components/lodash/dist/lodash.compat.js"
         "vendor/components/ractive/build/Ractive-legacy.js"
       ]
 
