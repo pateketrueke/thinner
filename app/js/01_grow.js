@@ -1,6 +1,6 @@
 
   // default hooks
-  var grow = function (from, handler, is_plain) {
+  var grow = function (from, handler) {
     var key;
 
     if (! ('model' in handler)) {
@@ -14,12 +14,6 @@
 
     handler.events = handler.events || {};
     handler.events.error = raise.call(handler, from, handler.events.error || undefined);
-
-    // backward compatibility
-    if (is_plain) {
-      handler = handle(from.context, handler);
-    }
-
 
     // error handling (?)
     for (key in methods) {
