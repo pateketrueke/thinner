@@ -10,68 +10,71 @@
 
       // API
 
+      history: [],
+
       classes: {},
       handlers: {},
 
       context: {
-
-        history: [],
-
         globals: {},
-        helpers: {},
+        helpers: {}
+      },
 
-        // new objects
-        factory: function () {
-          return new arguments[0](app, merge(true, slice.call(arguments, 1)));
-        },
 
-        // apply this context
-        send: function (partial) {
-          var length,
-              retval,
-              index = 0,
-              params = {};
+      // new objects
+      factory: function () {
+        return new arguments[0](app, merge(true, slice.call(arguments, 1)));
+      },
 
-          partial = 'object' === typeof partial && partial.length ? partial : [partial];
-          params = merge(true, slice.call(arguments, 1)) || {};
-          length = partial.length;
 
-          for (; index < length; index += 1) {
-            retval = partial[index].call(app.context, params);
-          }
+      // apply this context
+      send: function (partial) {
+        var length,
+            retval,
+            index = 0,
+            params = {};
 
-          return retval;
-        },
+        partial = 'object' === typeof partial && partial.length ? partial : [partial];
+        params = merge(true, slice.call(arguments, 1)) || {};
+        length = partial.length;
 
-        // assembly urls
-        url: function (name, params) {
-          return error(app, function () {
-            return app.router.recognizer.generate(name, params);
-          });
-        },
-
-        // redirections
-        go: function (path, params, update) {
-          var args = url_params(path, params, update);
-
-          params = args[1] || {};
-          update = args[2];
-          path = args[0];
-
-          return error(app, function () {
-            if (path.charAt(0) === '/') {
-              if (! app.router.recognizer.recognize(path)) {
-                throw new Error('<' + path + '> route not found!');
-              }
-
-              return app.router.redirectURL(path, update);
-            } else {
-              return update ? app.router.redirectURL(app.context.url(path, params), true)
-                : ! count(params) ? app.router.replaceWith(path)
-                : app.router.replaceWith(path, params);
-            }
-          }, RSVP.reject());
+        for (; index < length; index += 1) {
+          retval = partial[index].call(app.context, params);
         }
+
+        return retval;
+      },
+
+
+      // assembly urls
+      url: function (name, params) {
+        return error(app, function () {
+          return app.router.recognizer.generate(name, params);
+        });
+      },
+
+
+      // redirections
+      go: function (path, params, update) {
+        var args = url_params(path, params, update);
+
+        params = args[1] || {};
+        update = args[2];
+        path = args[0];
+
+        return error(app, function () {
+          if (path.charAt(0) === '/') {
+            if (! app.router.recognizer.recognize(path)) {
+              throw new Error('<' + path + '> route not found!');
+            }
+
+            return app.router.redirectURL(path, update);
+          } else {
+            return update ? app.router.redirectURL(app.url(path, params), true)
+              : ! count(params) ? app.router.replaceWith(path)
+              : app.router.replaceWith(path, params);
+          }
+        }, RSVP.reject());
       },
 
 

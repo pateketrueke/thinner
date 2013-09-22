@@ -42,7 +42,7 @@
     self.router.redirectURL = function(path, update) {
       if (false !== update) {
         self.router.updateURL(path);
-        self.context.history.push({ to: path });
+        self.history.push({ to: path });
       } else {
         self.router.replaceURL(path);
       }
