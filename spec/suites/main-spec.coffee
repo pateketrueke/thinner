@@ -21,77 +21,77 @@ describe 'Our application:', ->
       expect(-> app.load ['Irregular value']).toThrow()
 
     it 'will not run over invalid routes', ->
-      expect(-> app.context.go('/abc')).toThrow()
-      expect(-> app.context.go('whatever')).toThrow()
-      expect(-> app.context.go('no_handler')).toThrow()
+      expect(-> app.go('/abc')).toThrow()
+      expect(-> app.go('whatever')).toThrow()
+      expect(-> app.go('no_handler')).toThrow()
 
     it 'will allow pass itself as context (?)', ->
-      obj = app.context.factory stdClass
+      obj = app.factory stdClass
       expect(String(obj)).toEqual '__CLASS__'
       expect(obj.router).toEqual app.router
-      expect(obj.send).toEqual app.context.send
+      expect(obj.send).toEqual app.send
 
-      obj = app.context.factory stdClass, x: 'y', a: 'b'
+      obj = app.factory stdClass, x: 'y', a: 'b'
       expect(obj.params).toEqual { x: 'y', a: 'b' }
 
     describe 'Looking at routes:', ->
       async = new AsyncSpec @
 
       async.it 'should display "Hello World" at /', (done) ->
-        app.context.go '/'
+        app.go '/'
         delay done, ->
           expect(get()).toEqual 'Hello World'
 
       async.it 'should display "Hi dude!" at /hi/dude', (done) ->
-        app.context.go '/hi/dude', off
+        app.go '/hi/dude', off
         delay done, ->
           expect(get()).toEqual 'Hi dude!'
 
       async.it 'should display "testing" at /hi/new', (done) ->
-        app.context.go '/hi/new', off
+        app.go '/hi/new', off
         delay done, ->
           expect(get()).toEqual 'new'
 
       async.it 'should trigger some events, i.e. "testEvent"', (done) ->
-        app.context.go 'home', { x: 'y' }, off
+        app.go 'home', { x: 'y' }, off
         delay done, ->
           app.router.trigger 'testEvent'
           expect(get()).toEqual 'testing'
 
       async.it 'should handle promises when redirecting', (done) ->
-        app.context.go('home').then done
+        app.go('home').then done
 
       async.it 'should care about onpopstate events', (done) ->
-        app.context.go { to: 'test' }
-        app.context.go '/some_path'
+        app.go { to: 'test' }
+        app.go '/some_path'
         history.back -1
         delay done, ->
           path = document.location.pathname
           expect(path).toEqual '/foo'
-          app.context.go '/'
+          app.go '/'
 
       async.it 'should handle registered data-actions', (done) ->
-        app.context.go('explode_this', false).then ->
+        app.go('explode_this', false).then ->
           $('.js-action').trigger 'click'
           expect(get()).toEqual 'xy'
-          app.context.go '/'
+          app.go '/'
           done()
 
       describe 'By the way:', ->
         it 'we can build our application routes with url()', ->
-          expect(-> app.context.url 'show').toThrow()
-          expect(app.context.url 'make').toEqual '/hi/new'
-          expect(app.context.url('show', { name: 'foo' })).toEqual '/hi/foo'
+          expect(-> app.url 'show').toThrow()
+          expect(app.url 'make').toEqual '/hi/new'
+          expect(app.url('show', { name: 'foo' })).toEqual '/hi/foo'
 
         it 'we can use send() as context mixin (?)', ->
           app.context.globals.foo = 'bar'
-          app.context.send (params) ->
+          app.send (params) ->
             expect(@globals.foo).toEqual 'bar'
             expect(@globals.bar).toBeUndefined()
             expect(params).toEqual { foo: 'bar', x: 'y' }
           , { foo: 'bar' }, { x: 'y' }
 
-          test = app.context.send [
+          test = app.send [
             -> 'foo'
             -> @globals.foo
           ]
@@ -100,8 +100,8 @@ describe 'Our application:', ->
 
         it 'we can expose useful functions as helpers', ->
           app.context.helpers.foo = -> 'bar'
-          app.context.helpers.url_for = -> app.context.url arguments...
+          app.context.helpers.url_for = -> app.url arguments...
 
-          app.context.send ->
+          app.send ->
             expect(@helpers.foo()).toEqual 'bar'
             expect(@helpers.url_for 'make').toEqual '/hi/new'

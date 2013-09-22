@@ -1,8 +1,8 @@
 mohawk (App) ->
 
   class App.Module
-    initialize_module: (mapper) ->
-      mapper.draw (match) ->
+    constructor: (app) ->
+      app.router.map (match) ->
         match('/example').to 'no_handler'
         match('/some_path').to 'my.handler'
         match('/some/actions').to 'explode_this'

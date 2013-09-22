@@ -1,6 +1,7 @@
 class Other
-  initialize_module: (mapper) ->
-    mapper.draw (match) ->
+  constructor: (app) ->
+    app.router.map (match) ->
       match('/foo').to 'test'
 
-      test: {}
+mohawk (App) ->
+  class App.test
