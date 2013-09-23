@@ -45,5 +45,5 @@ module.exports = lineman.config.extend "files",
       ]
       concatenated: "generated/js/vendor.js"
 
-    vendorDistDest: "dist/vendor"
+    vendorDistDest: "dist/bundle"
     concatenatedSpec: "generated/js/spec/main.js"
