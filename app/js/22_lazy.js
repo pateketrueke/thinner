@@ -3,15 +3,20 @@
   var lazy = function (from, name, partial) {
     var obj;
 
-    return function () {
+    return function (data, reset) {
       var params,
           slug = '#' + dasherize(name) + '__' + dasherize(partial);
 
-      if (! obj) {
+      if (! obj || reset) {
+        if (obj && reset) {
+          obj.view.teardown();
+        }
+
         obj = new from.classes[name][partial](from);
 
         params = obj.view || {};
         params.el = params.el || slug;
+        params.data = params.data || data || {};
         params.template = params.template || (slug + '-partial');
 
         // ractive.js
@@ -25,4 +30,3 @@
       return obj;
     };
   };
-
