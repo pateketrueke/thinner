@@ -4,9 +4,21 @@
     var obj;
 
     return function () {
+      var params,
+          slug = '#' + dasherize(name) + '__' + dasherize(partial);
+
       if (! obj) {
         obj = new from.classes[name][partial](from);
-        obj.view = new Ractive(obj.view || {}); // TODO: defaults
+
+        params = obj.view || {};
+        params.el = params.el || slug;
+        params.template = params.template || (slug + '-partial');
+
+        // ractive.js
+        obj.view = error(from, function () {
+          return new Ractive(params);
+        });
+
         obj.setup();
       }
 
