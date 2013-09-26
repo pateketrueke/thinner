@@ -40,15 +40,3 @@
 
     return $.apply($, arguments);
   };
-
-
-  // combine objects
-  var merge = function (raw, args) {
-    var $ = elem();
-
-    if (true === raw) {
-      return $.extend.apply($, [true, {}].concat(args));
-    }
-
-    return $.extend.apply($, [true, {}, raw].concat(slice.call(arguments, 1)));
-  };

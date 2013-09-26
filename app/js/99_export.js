@@ -28,7 +28,9 @@
     }
 
     if ('object' === typeof block) {
-      settings = merge(settings, block);
+      for (key in block) {
+        settings[key] = block[key] || settings[key];
+      }
     }
   };
 
