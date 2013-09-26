@@ -1,6 +1,10 @@
 describe 'Our application:', ->
 
-  app = mohawk.loader().run ->
+  Thinner.setup ->
+  Thinner.setup {}
+  Thinner.setup { x: 'y' }
+
+  app = Thinner.loader().run ->
   app.load [Home, Other]
 
   it 'will validate all their modules', ->
@@ -15,14 +19,10 @@ describe 'Our application:', ->
     expect(-> app.go('whatever')).toThrow()
     expect(-> app.go('no_handler')).toThrow()
 
-  it 'will allow pass itself as context (?)', ->
-    obj = app.factory stdClass
-    expect(String(obj)).toEqual '__CLASS__'
-    expect(obj.router).toEqual app.router
-    expect(obj.send).toEqual app.send
-
-    obj = app.factory stdClass, x: 'y', a: 'b'
-    expect(obj.params).toEqual { x: 'y', a: 'b' }
+  it 'we can build our application routes with url()', ->
+    expect(-> app.url 'show').toThrow()
+    expect(app.url 'make').toEqual '/hi/new'
+    expect(app.url('show', { name: 'foo' })).toEqual '/hi/foo'
 
   describe 'Looking at routes:', ->
     async = new AsyncSpec @
@@ -67,31 +67,8 @@ describe 'Our application:', ->
         app.go '/'
         done()
 
-    describe 'By the way:', ->
-      it 'we can build our application routes with url()', ->
-        expect(-> app.url 'show').toThrow()
-        expect(app.url 'make').toEqual '/hi/new'
-        expect(app.url('show', { name: 'foo' })).toEqual '/hi/foo'
-
-      it 'we can use send() as context mixin (?)', ->
-        app.context.globals.foo = 'bar'
-        app.send (params) ->
-          expect(@globals.foo).toEqual 'bar'
-          expect(@globals.bar).toBeUndefined()
-          expect(params).toEqual { foo: 'bar', x: 'y' }
-        , { foo: 'bar' }, { x: 'y' }
-
-        test = app.send [
-          -> 'foo'
-          -> @globals.foo
-        ]
-
-        expect(test).toEqual 'bar'
-
-      it 'we can expose useful functions as helpers', ->
-        app.context.helpers.foo = -> 'bar'
-        app.context.helpers.url_for = -> app.url arguments...
-
-        app.send ->
-          expect(@helpers.foo()).toEqual 'bar'
-          expect(@helpers.url_for 'make').toEqual '/hi/new'
+    async.it 'implements plugin-in views silently', (done) ->
+      app.go('/do/nothing').then ->
+        expect(get()).toEqual 'function'
+        app.go '/'
+        done()

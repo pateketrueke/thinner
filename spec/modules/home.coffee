@@ -5,7 +5,7 @@ class Home
       match('/hi/new').to 'make'
       match('/hi/:name').to 'show'
 
-mohawk (App) ->
+Thinner (App) ->
   class App.home
     enter: -> set 'Hello World'
     events:

@@ -3,5 +3,5 @@ class Other
     app.router.map (match) ->
       match('/foo').to 'test'
 
-mohawk (App) ->
+Thinner (App) ->
   class App.test

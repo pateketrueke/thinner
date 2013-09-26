@@ -1,9 +1,10 @@
-mohawk (App) ->
+Thinner (App) ->
 
   class App.Module
     constructor: (app) ->
       app.router.map (match) ->
         match('/example').to 'no_handler'
+        match('/do/:test').to 'test_view'
         match('/some_path').to 'my.handler'
         match('/some/actions').to 'explode_this'
 
@@ -27,3 +28,8 @@ mohawk (App) ->
   class App.notFound
     exception: (e) ->
       throw e
+
+  class App.testView
+    enter: -> set typeof @myView
+
+  class App.testView.myView
