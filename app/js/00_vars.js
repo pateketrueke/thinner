@@ -20,9 +20,7 @@
   // application config
   var settings = {
     el: 'body',
-    listen: 'touchstart touchmove touchend touchcancel keydown keyup keypress mousedown mouseup contextmenu ' +
-            'click doubleclick mousemove focusin focusout mouseenter mouseleave submit input change ' +
-            'dragstart drag dragenter dragleave dragover drop dragend'
+    listen: 'click doubleclick submit input change' // basics (?)
   };
 
 
