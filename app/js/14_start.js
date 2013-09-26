@@ -7,7 +7,7 @@
 
     // load modules
     for (module in modules) {
-      modules[module].call(self.context, app);
+      modules[module](app);
     }
 
     // popstate events

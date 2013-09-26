@@ -8,10 +8,6 @@
         throw new Error('<' + modules[module] + '> is not a module!');
       }
 
-      module = new modules[module](app);
-
-      if ('function' === typeof module.define) {
-        module.define.call(app.context, module);
-      }
+      app.modules.push(new modules[module](app));
     }
   };

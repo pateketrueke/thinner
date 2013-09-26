@@ -2,7 +2,7 @@
 //!  'use strict';
 
   // shortcuts
-  var Mohawk,
+  var Thinner,
 
       global = this,
       exception,

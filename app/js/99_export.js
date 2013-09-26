@@ -1,14 +1,14 @@
 
   // some isolation
-  Mohawk = function (block) {
+  Thinner = function (block) {
     modules.push(block);
   };
 
 
   // singleton
-  Mohawk.loader = function (config) {
+  Thinner.loader = function (config) {
     if (! running) {
-      Mohawk.setup(config);
+      Thinner.setup(config);
       root = elem(settings.el || 'body', doc);
       running = start();
     }
@@ -18,7 +18,7 @@
 
 
   // settings
-  Mohawk.setup = function (block) {
+  Thinner.setup = function (block) {
     var key,
         params = {};
 
@@ -34,6 +34,12 @@
 
 
   // expose
-  this.mohawk = Mohawk;
+  if ('undefined' !== typeof module && module.exports) {
+    module.exports = Thinner;
+  } else if ('function' === typeof define && define.amd) {
+    define(function () { return Thinner; });
+  } else {
+    this.Thinner = Thinner;
+  }
 
 //!}).call(this);

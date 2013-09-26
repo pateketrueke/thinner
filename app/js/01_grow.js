@@ -19,6 +19,4 @@
     for (key in methods) {
       handler[methods[key]] = raise.call(handler, from, handler[methods[key]]);
     }
-
-    return handler;
   };

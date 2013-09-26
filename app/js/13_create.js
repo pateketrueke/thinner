@@ -8,42 +8,12 @@
       // router.js
       router: new Router(),
 
-      // API
-
+      // setup
       history: [],
+      modules: [],
 
       classes: {},
       handlers: {},
-
-      context: {
-        globals: {},
-        helpers: {}
-      },
-
-
-      // new objects
-      factory: function () {
-        return new arguments[0](app, merge(true, slice.call(arguments, 1)));
-      },
-
-
-      // apply this context
-      send: function (partial) {
-        var length,
-            retval,
-            index = 0,
-            params = {};
-
-        partial = 'object' === typeof partial && partial.length ? partial : [partial];
-        params = merge(true, slice.call(arguments, 1)) || {};
-        length = partial.length;
-
-        for (; index < length; index += 1) {
-          retval = partial[index].call(app.context, params);
-        }
-
-        return retval;
-      },
 
 
       // assembly urls
@@ -111,7 +81,7 @@
         }
 
         if ('function' === typeof block) {
-          block.call(app.context, app);
+          block(app);
         }
 
         return app;
