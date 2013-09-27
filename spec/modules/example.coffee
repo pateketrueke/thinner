@@ -1,5 +1,10 @@
 Thinner (App) ->
 
+  class App.errorHandler
+    exception: (e) ->
+      console.log '(!) ' + e.message, e
+      throw e
+
   class App.Module
     constructor: (app) ->
       app.router.map (match) ->
@@ -30,6 +35,14 @@ Thinner (App) ->
       throw e
 
   class App.testView
-    enter: -> set typeof @myView
+    enter: ->
+      set @myView
 
   class App.testView.myView
+    constructor: ->
+      $('body').append '<div id="foo" />'
+      $('body').append '<div id="bar" />'
+
+    view:
+      el: '#foo'
+      template: '#bar'

@@ -68,7 +68,11 @@ describe 'Our application:', ->
         done()
 
     async.it 'implements plugin-in views silently', (done) ->
-      app.go('/do/nothing').then ->
-        expect(get()).toEqual 'function'
+      app.go('/do/nothing', false).then ->
+        fn = get()
+
+        expect(-> fn()).toThrow()
+        expect(typeof fn).toEqual 'function'
+
         app.go '/'
         done()
