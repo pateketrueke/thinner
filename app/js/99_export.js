@@ -45,6 +45,12 @@
   };
 
 
+  // partials
+  Thinner.helpers = {};
+  Thinner.render = partial;
+  Thinner.templates = global.JST || {};
+
+
   // expose
   if ('undefined' !== typeof module && module.exports) {
     module.exports = Thinner;
