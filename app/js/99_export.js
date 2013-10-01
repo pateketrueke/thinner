@@ -35,6 +35,16 @@
   };
 
 
+  // globals (?)
+  Thinner.set = function (key, value) {
+    return store.call(registry, key, value);
+  };
+
+  Thinner.get = function (key) {
+    return lookup.apply(registry, key.split('.'));
+  };
+
+
   // expose
   if ('undefined' !== typeof module && module.exports) {
     module.exports = Thinner;

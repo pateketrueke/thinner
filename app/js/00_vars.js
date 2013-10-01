@@ -28,5 +28,9 @@
   var methods = 'enter setup serialize'.split(' ');
 
 
+  // common container
+  var registry = {};
+
+
   // ...
   var root;
