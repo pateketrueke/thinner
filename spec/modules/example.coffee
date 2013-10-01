@@ -1,10 +1,5 @@
 Thinner (App) ->
 
-  class App.errorHandler
-    exception: (e) ->
-      console.log '(!) ' + e.message, e
-      throw e
-
   class App.Module
     constructor: (app) ->
       app.router.map (match) ->
