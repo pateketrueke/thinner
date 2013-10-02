@@ -1,6 +1,6 @@
 
   // basic extends
-  var partial = function (path, vars) {
+  var partial = function (path, vars, helpers) {
     var view,
         locals = {};
 
@@ -9,12 +9,12 @@
 
     view = 'app/templates/' + path.replace(/[^\w_-]/g, '/');
 
-    if (! (view = Thinner.templates[view] || Thinner.templates[path])) {
+    if (! (view = settings.templates[view] || settings.templates[path])) {
       throw new Error("Missing '" + path + "' view!");
     }
 
     extend(locals, vars);
-    extend(locals, Thinner.helpers);
+    extend(locals, helpers);
 
     locals.partial = partial;
 

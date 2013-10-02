@@ -1,7 +1,8 @@
 
   // constructor
   var create = function (ns) {
-    var app;
+    var app,
+        tmp = {};
 
     // instance
     return app = {
@@ -12,8 +13,33 @@
       history: [],
       modules: [],
 
+      // context
       classes: {},
       handlers: {},
+
+      // functions
+      helpers: {},
+      imports: {},
+
+      extend: function (key, fn) {
+        extend(app.imports, handle(app, 'function' === typeof fn ? { key: fn } : key));
+      },
+
+
+      // templating
+      render: function (path, vars) {
+        return partial(path, vars, app.helpers);
+      },
+
+
+      // registry
+      set: function (key, value) {
+        return store.call(tmp, key, value);
+      },
+
+      get: function (key) {
+        return lookup.apply(tmp, key.split('.'));
+      },
 
 
       // assembly urls

@@ -20,16 +20,13 @@
   // application config
   var settings = {
     el: 'body',
-    listen: 'click doubleclick submit input change' // basics (?)
+    listen: 'click doubleclick submit input change', // basics (?)
+    templates: global.JST || {}
   };
 
 
   // handled methods on error
   var methods = 'enter setup serialize'.split(' ');
-
-
-  // common container
-  var registry = {};
 
 
   // ...

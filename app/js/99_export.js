@@ -35,22 +35,6 @@
   };
 
 
-  // globals (?)
-  Thinner.set = function (key, value) {
-    return store.call(registry, key, value);
-  };
-
-  Thinner.get = function (key) {
-    return lookup.apply(registry, key.split('.'));
-  };
-
-
-  // partials
-  Thinner.helpers = {};
-  Thinner.render = partial;
-  Thinner.templates = global.JST || {};
-
-
   // expose
   if ('undefined' !== typeof module && module.exports) {
     module.exports = Thinner;
