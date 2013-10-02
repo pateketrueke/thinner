@@ -87,6 +87,7 @@ module.exports = lineman.config.extend "application",
 
     dist:
       options:
+        banner: "/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today(\"yyyy-mm-dd\") %> */\n"
         process: (src, filepath) ->
           src.replace /["']use strict['"]\s*;?/g, ''
       files:
