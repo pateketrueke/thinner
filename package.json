@@ -1,8 +1,8 @@
 {
-  "name": "Mohawk",
+  "name": "Thinner",
   "version": "0.6.0",
-  "description": "Volatile tools: jQuery, Ractive, Lo-Dash, router.js and HTML5-History-API",
-  "homepage": "https://github.com/pateketrueke/mohawk",
+  "description": "Volatile tools",
+  "homepage": "https://github.com/pateketrueke/thinner",
   "author": {
     "name": "Alvaro Cabrera",
     "email": "pateketrueke@gmail.com"
