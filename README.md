@@ -31,6 +31,7 @@ In order to work you'll add the dependencies listed below:
 **vendor.yaml**
 
 ```yaml
+js:
   - Thinner/dist/bundle/jquery.js
   - Thinner/dist/bundle/lodash.compat.js  # optional
   - Thinner/dist/bundle/Ractive-legacy.js # optional
