@@ -22,7 +22,15 @@
       imports: {},
 
       extend: function (key, fn) {
-        extend(app.imports, handle(app, 'function' === typeof fn ? { key: fn } : key));
+        var hash = {};
+
+        if ('function' === typeof fn) {
+          hash[key] = fn;
+        } else {
+          hash = key;
+        }
+
+        extend(app.imports, handle(app, hash));
       },
 
 
