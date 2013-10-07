@@ -1,8 +1,9 @@
+/*! Thinner - v0.6.0 - 2013-10-07 */
 (function (undefined) {
   
 
   // shortcuts
-  var Mohawk,
+  var Thinner,
 
       global = this,
       exception,
@@ -20,9 +21,8 @@
   // application config
   var settings = {
     el: 'body',
-    listen: 'touchstart touchmove touchend touchcancel keydown keyup keypress mousedown mouseup contextmenu ' +
-            'click doubleclick mousemove focusin focusout mouseenter mouseleave submit input change ' +
-            'dragstart drag dragenter dragleave dragover drop dragend'
+    listen: 'click doubleclick submit input change', // basics (?)
+    templates: global.JST || {}
   };
 
 
@@ -54,14 +54,18 @@
     for (key in methods) {
       handler[methods[key]] = raise.call(handler, from, handler[methods[key]]);
     }
-
-    return handler;
   };
 
 
   // nice handlers
   var camelize = function (str) {
     return str.replace(/[._-][a-z]/g, function ($0) { return $0.substr(1).toUpperCase(); });
+  };
+
+
+  // nice names
+  var dasherize = function (str) {
+    return str.replace(/[A-Z]/g, function ($0) { return '-' + $0.toLowerCase(); });
   };
 
 
@@ -102,22 +106,16 @@
   };
 
 
-  // combine objects
-  var merge = function (raw, args) {
-    var $ = elem();
-
-    if (true === raw) {
-      return $.extend.apply($, [true, {}].concat(args));
-    }
-
-    return $.extend.apply($, [true, {}, raw].concat(slice.call(arguments, 1)));
-  };
-
-
   // remove handlers
   var dispose = function (from, name, fn) {
     return function () {
-      var retval = 'function' === typeof fn ? fn.apply(null, arguments) : undefined;
+      var retval = 'function' === typeof fn ? fn.apply(null, arguments) : undefined,
+          partial;
+
+      // delegated views (?)
+      while (partial = from.handlers[name].partials.pop()) {
+        from.handlers[name][partial]().view.teardown();
+      }
 
       // only if can be created again
       delete from.handlers[name];
@@ -131,7 +129,11 @@
   var delegate = function (from, name) {
     var handler;
 
-    handler = grow(from, new from.classes[name](from));
+    handler = new from.classes[name](from);
+
+    grow(from, handler);
+    view(from, name, handler);
+
     handler.exit = dispose(from, name, handler.exit || undefined);
 
     return handler;
@@ -188,11 +190,7 @@
         throw new Error('<' + modules[module] + '> is not a module!');
       }
 
-      module = new modules[module](app);
-
-      if ('function' === typeof module.define) {
-        module.define.call(app.context, module);
-      }
+      app.modules.push(new modules[module](app));
     }
   };
 
@@ -226,48 +224,44 @@
 
   // constructor
   var create = function (ns) {
-    var app;
+    var app,
+        tmp = {};
 
     // instance
     return app = {
       // router.js
       router: new Router(),
 
-      // API
-
+      // setup
       history: [],
+      modules: [],
 
+      // context
       classes: {},
       handlers: {},
 
-      context: {
-        globals: {},
-        helpers: {}
+      // functions
+      helpers: {},
+      imports: {},
+
+      extend: function (key, fn) {
+        extend(app.imports, handle(app, 'function' === typeof fn ? { key: fn } : key));
       },
 
 
-      // new objects
-      factory: function () {
-        return new arguments[0](app, merge(true, slice.call(arguments, 1)));
+      // templating
+      render: function (path, vars) {
+        return partial(path, vars, app.helpers);
       },
 
 
-      // apply this context
-      send: function (partial) {
-        var length,
-            retval,
-            index = 0,
-            params = {};
+      // registry
+      set: function (key, value) {
+        return store.call(tmp, key, value);
+      },
 
-        partial = 'object' === typeof partial && partial.length ? partial : [partial];
-        params = merge(true, slice.call(arguments, 1)) || {};
-        length = partial.length;
-
-        for (; index < length; index += 1) {
-          retval = partial[index].call(app.context, params);
-        }
-
-        return retval;
+      get: function (key) {
+        return lookup.apply(tmp, key.split('.'));
       },
 
 
@@ -336,7 +330,7 @@
         }
 
         if ('function' === typeof block) {
-          block.call(app.context, app);
+          block(app);
         }
 
         return app;
@@ -355,7 +349,7 @@
 
     // load modules
     for (module in modules) {
-      modules[module].call(self.context, app);
+      modules[module].call(self, app);
     }
 
     // popstate events
@@ -473,16 +467,124 @@
   };
 
 
+  // reactive views
+  var view = function (from, name, handler) {
+    var key;
+
+    // lazy loading
+    handler.partials = [];
+
+    for (key in from.classes[name]) {
+      if (key in handler) {
+        throw new Error('<' + partials[length] + '> already defined!');
+      }
+
+      handler[key] = lazy(from, name, key);
+      handler.partials.push(key);
+    }
+  };
+
+
+  // lazy objects
+  var lazy = function (from, name, partial) {
+    var obj;
+
+    return function (data, reset) {
+      var params,
+          slug = '#' + dasherize(name) + '__' + dasherize(partial);
+
+      if (! obj || reset) {
+        if (obj && reset) {
+          obj.view.teardown();
+        }
+
+        obj = new from.classes[name][partial](from);
+
+        params = obj.view || {};
+        params.el = params.el || slug;
+        params.data = params.data || data || {};
+        params.template = params.template || (slug + '-partial');
+
+        // ractive.js
+        obj.view = error(from, function () {
+          return new Ractive(params);
+        });
+
+        obj.setup();
+      }
+
+      return obj;
+    };
+  };
+
+
+  // retrieve container
+  var lookup = function () {
+    var keys = slice.call(arguments),
+        root = keys.shift(),
+        retval;
+
+    if (this[root]) {
+      retval = this[root];
+    }
+
+    return keys.length ? lookup.apply(retval, keys) : retval;
+  };
+
+
+  // registry container
+  var store = function (key, value) {
+    this[key] = value;
+  };
+
+
+  // basic extends
+  var partial = function (path, vars, helpers) {
+    var view,
+        locals = {};
+
+    vars = vars || {};
+    path = path || 'undefined';
+
+    view = 'app/templates/' + path.replace(/[^\w_-]/g, '/');
+
+    if (! (view = settings.templates[view] || settings.templates[path])) {
+      throw new Error("Missing '" + path + "' view!");
+    }
+
+    extend(locals, vars);
+    extend(locals, helpers);
+
+    locals.partial = partial;
+
+    try {
+      return view.call(null, locals);
+    } catch (exception) {
+      throw new Error(String(exception) + ' (' + path +')');
+    }
+  };
+
+
+  // basic extends
+  var extend = function (self, source) {
+    for (var key in source) {
+      if (source.hasOwnProperty(key)) {
+        self[key] = source[key];
+      }
+    }
+  };
+
+
   // some isolation
-  Mohawk = function (block) {
+  Thinner = function (block) {
     modules.push(block);
   };
 
 
   // singleton
-  Mohawk.loader = function (config) {
+  Thinner.loader = function (config) {
     if (! running) {
-      Mohawk.setup(config);
+      Thinner.setup(config);
       root = elem(settings.el || 'body', doc);
       running = start();
     }
@@ -492,7 +594,7 @@
 
 
   // settings
-  Mohawk.setup = function (block) {
+  Thinner.setup = function (block) {
     var key,
         params = {};
 
@@ -502,12 +604,20 @@
     }
 
     if ('object' === typeof block) {
-      settings = merge(settings, block);
+      for (key in block) {
+        settings[key] = block[key] || settings[key];
+      }
     }
   };
 
 
   // expose
-  this.mohawk = Mohawk;
+  if ('undefined' !== typeof module && module.exports) {
+    module.exports = Thinner;
+  } else if ('function' === typeof define && define.amd) {
+    define(function () { return Thinner; });
+  } else {
+    this.Thinner = Thinner;
+  }
 
 }).call(this);
