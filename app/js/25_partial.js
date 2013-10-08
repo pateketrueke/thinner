@@ -16,7 +16,7 @@
     extend(locals, vars);
     extend(locals, helpers);
 
-    locals.partial = partial;
+    locals.partial = function (path, vars) { return partial(path, vars, helpers); };
 
     try {
       return view.call(null, locals);
