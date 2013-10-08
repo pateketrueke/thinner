@@ -1,11 +1,9 @@
-/*! Thinner - v0.6.0 - 2013-10-07 */
+/*! Thinner - v0.6.0 - 2013-10-08 */
 (function (undefined) {
   
 
   // shortcuts
-  var Thinner,
-
-      global = this,
+  var global = this,
       exception,
       running,
 
@@ -244,8 +242,16 @@
       helpers: {},
       imports: {},
 
-      extend: function (key, fn) {
-        extend(app.imports, handle(app, 'function' === typeof fn ? { key: fn } : key));
+      exports: function (key, fn) {
+        var hash = {};
+
+        if ('function' === typeof fn) {
+          hash[key] = fn;
+        } else {
+          hash = key;
+        }
+
+        extend(app.imports, handle(app, hash));
       },
 
 
@@ -576,15 +582,15 @@
 
 
   // some isolation
-  Thinner = function (block) {
+  var thinner = function (block) {
     modules.push(block);
   };
 
 
   // singleton
-  Thinner.loader = function (config) {
+  thinner.loader = function (config) {
     if (! running) {
-      Thinner.setup(config);
+      thinner.setup(config);
       root = elem(settings.el || 'body', doc);
       running = start();
     }
@@ -594,7 +600,7 @@
 
 
   // settings
-  Thinner.setup = function (block) {
+  thinner.setup = function (block) {
     var key,
         params = {};
 
@@ -613,11 +619,11 @@
 
   // expose
   if ('undefined' !== typeof module && module.exports) {
-    module.exports = Thinner;
+    module.exports = thinner;
   } else if ('function' === typeof define && define.amd) {
-    define(function () { return Thinner; });
+    define(function () { return thinner; });
   } else {
-    this.Thinner = Thinner;
+    this.thinner = thinner;
   }
 
 }).call(this);
