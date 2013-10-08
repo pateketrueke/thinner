@@ -3,9 +3,21 @@ describe 'Our application:', ->
   thinner.setup ->
   thinner.setup {}
   thinner.setup { x: 'y' }
+  thinner.setup { templates: { x: -> 'y' } }
 
   app = thinner.loader().run ->
   app.load [Home, Other]
+
+  it 'can render() JST-templates', ->
+    expect(app.render 'x').toBe 'y'
+
+  it 'can exports some useful functions', ->
+    app.exports foo: -> 'bar'
+    app.exports 'x', -> 'y'
+
+  it 'can store/retrieve registry values', ->
+    app.set 'x', 'y'
+    expect(app.get 'x').toBe 'y'
 
   it 'will validate all their modules', ->
     expect(app.load).toThrow()
