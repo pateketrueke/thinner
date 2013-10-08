@@ -21,7 +21,7 @@
       helpers: {},
       imports: {},
 
-      extend: function (key, fn) {
+      exports: function (key, fn) {
         var hash = {};
 
         if ('function' === typeof fn) {
