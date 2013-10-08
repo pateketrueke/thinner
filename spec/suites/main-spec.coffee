@@ -33,8 +33,8 @@ describe 'Our application:', ->
 
   it 'we can build our application routes with url()', ->
     expect(-> app.url 'show').toThrow()
-    expect(app.url 'make').toEqual '/hi/new'
-    expect(app.url('show', { name: 'foo' })).toEqual '/hi/foo'
+    expect(app.url 'make').toBe '/hi/new'
+    expect(app.url('show', { name: 'foo' })).toBe '/hi/foo'
 
   describe 'Looking at routes:', ->
     async = new AsyncSpec @
@@ -42,23 +42,23 @@ describe 'Our application:', ->
     async.it 'should display "Hello World" at /', (done) ->
       app.go '/'
       delay done, ->
-        expect(get()).toEqual 'Hello World'
+        expect(get()).toBe 'Hello World'
 
     async.it 'should display "Hi dude!" at /hi/dude', (done) ->
       app.go '/hi/dude', off
       delay done, ->
-        expect(get()).toEqual 'Hi dude!'
+        expect(get()).toBe 'Hi dude!'
 
     async.it 'should display "testing" at /hi/new', (done) ->
       app.go '/hi/new', off
       delay done, ->
-        expect(get()).toEqual 'new'
+        expect(get()).toBe 'new'
 
     async.it 'should trigger some events, i.e. "testEvent"', (done) ->
       app.go 'home', { x: 'y' }, off
       delay done, ->
         app.router.trigger 'testEvent'
-        expect(get()).toEqual 'testing'
+        expect(get()).toBe 'testing'
 
     async.it 'should handle promises when redirecting', (done) ->
       app.go('home').then done
@@ -69,13 +69,13 @@ describe 'Our application:', ->
       history.back -1
       delay done, ->
         path = document.location.pathname
-        expect(path).toEqual '/foo'
+        expect(path).toBe '/foo'
         app.go '/'
 
     async.it 'should handle registered data-actions', (done) ->
       app.go('explode_this', false).then ->
         $('.js-action').trigger 'click'
-        expect(get()).toEqual 'xy'
+        expect(get()).toBe 'xy'
         app.go '/'
         done()
 
@@ -84,7 +84,7 @@ describe 'Our application:', ->
         fn = get()
 
         expect(-> fn()).toThrow()
-        expect(typeof fn).toEqual 'function'
+        expect(typeof fn).toBe 'function'
 
         app.go '/'
         done()
