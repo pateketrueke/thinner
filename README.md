@@ -46,7 +46,7 @@ Of course you can replace all this dependencies by hand or using [Bower](http://
 **example.coffee**
 
 ```coffeescript
-Thinner (MyApp) ->
+thinner (MyApp) ->
   class MyApp.Main
     constructor: (app) ->
       app.router.map (match) ->
@@ -59,7 +59,7 @@ Thinner (MyApp) ->
 **app.js**
 
 ```javascript
-var app = Thinner.loader().run(function () {
+var app = thinner.loader().run(function () {
   app.go('/').then(function () {
     console.log('start');
   });
