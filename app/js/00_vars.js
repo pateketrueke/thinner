@@ -2,9 +2,7 @@
 //!  'use strict';
 
   // shortcuts
-  var Thinner,
-
-      global = this,
+  var global = this,
       exception,
       running,
 

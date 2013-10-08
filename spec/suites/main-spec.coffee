@@ -1,10 +1,10 @@
 describe 'Our application:', ->
 
-  Thinner.setup ->
-  Thinner.setup {}
-  Thinner.setup { x: 'y' }
+  thinner.setup ->
+  thinner.setup {}
+  thinner.setup { x: 'y' }
 
-  app = Thinner.loader().run ->
+  app = thinner.loader().run ->
   app.load [Home, Other]
 
   it 'will validate all their modules', ->

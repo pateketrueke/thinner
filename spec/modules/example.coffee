@@ -1,4 +1,4 @@
-Thinner (App) ->
+thinner (App) ->
 
   class App.Module
     constructor: (app) ->
