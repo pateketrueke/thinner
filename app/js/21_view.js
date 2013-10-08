@@ -1,17 +1,20 @@
 
   // reactive views
   var view = function (from, name, handler) {
-    var key;
+    var key,
+        klass = from.classes[name];
 
     // lazy loading
     handler.partials = [];
 
-    for (key in from.classes[name]) {
-      if (key in handler) {
-        throw new Error('<' + partials[length] + '> already defined!');
-      }
+    for (key in klass) {
+      if (klass.hasOwnProperty(key) && key.charAt() !== '_') {
+        if (key in handler) {
+          throw new Error('<' + partials[length] + '> already defined!');
+        }
 
-      handler[key] = lazy(from, name, key);
-      handler.partials.push(key);
+        handler[key] = lazy(from, name, key);
+        handler.partials.push(key);
+      }
     }
   };
