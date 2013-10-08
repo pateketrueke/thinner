@@ -33,8 +33,6 @@ In order to work you'll add the dependencies listed below:
 ```yaml
 js:
   - thinner/dist/bundle/jquery.js
-  - thinner/dist/bundle/lodash.compat.js  # optional
-  - thinner/dist/bundle/Ractive-legacy.js # optional
   - thinner/dist/bundle/rsvp-latest.js
   - thinner/dist/bundle/route-recognizer.js
   - thinner/dist/bundle/router.js

@@ -108,7 +108,6 @@ module.exports = lineman.config.extend "application",
       files: [
         { expand: true, flatten: true, src: [
           "<%= files.js.vendor.files %>"
-          "<%= files.js.bundle.files %>"
         ], dest: "<%= files.js.vendorDistDest %>", filter: "isFile" }
       ]
 

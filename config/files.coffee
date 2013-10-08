@@ -30,12 +30,6 @@ module.exports = lineman.config.extend "files",
       ]
       concatenated: "generated/js/testm.js"
 
-    bundle:
-      files: [
-        "vendor/components/lodash/dist/lodash.compat.js"
-        "vendor/components/ractive/build/Ractive-legacy.js"
-      ]
-
     vendor:
       files: [
         "vendor/js/**/*.js"
