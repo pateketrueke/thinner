@@ -8,8 +8,6 @@
 
 # lineman-lib-template config options:
 
-includeVendorInDistribution = false #set to true if you want your distribution to contain JS files in vendor/js
-
 lineman = require(process.env["LINEMAN_MAIN"])
 grunt = lineman.grunt
 _ = grunt.util._
@@ -35,26 +33,21 @@ module.exports = lineman.config.extend "application",
 
   watch:
     coffee:
-      tasks: ["coffee"]
+      tasks: ["coffee", "concat:spec"]
 
     lint:
       files: ["<%= files.js.app.files %>"]
 
     js:
       files: ["<%= files.js.app.files %>"]
-      tasks: ["concat:app"]
+      tasks: ["blanket", "concat:app"]
 
   clean:
     js:
       src: [
         "dist"
-        "coverage"
+        "generated"
         "vendor/components"
-        "<%= files.coffee.generated %>"
-        "<%= files.coffee.generatedSpec %>"
-        "<%= files.js.vendor.concatenated %>"
-        "<%= files.js.app.concatenated %>"
-        "<%= files.js.concatenatedSpec %>"
       ]
 
   jshint:
@@ -64,7 +57,7 @@ module.exports = lineman.config.extend "application",
     compile:
       options: {}
       files:
-        "coverage/": "generated/js/app/"
+        "generated/coverage": "generated/js/app"
 
   coffee:
     options:
@@ -91,10 +84,7 @@ module.exports = lineman.config.extend "application",
         process: (src, filepath) ->
           src.replace /["']use strict['"]\s*;?/g, ''
       files:
-        "<%= files.js.app.concatenatedDist %>": _([
-          ("<%= files.js.vendor.concatenated %>" if includeVendorInDistribution)
-          "<%= files.js.app.concatenated %>"
-        ]).compact()
+        "<%= files.js.app.concatenatedDist %>": "<%= files.js.app.concatenated %>"
 
     app:
       options:
@@ -102,6 +92,17 @@ module.exports = lineman.config.extend "application",
           _(src.split "\n").map((line) -> line.replace(/^\/\/!/, '')).join "\n"
       files:
         "<%= files.js.app.concatenated %>": "<%= files.js.app.files %>"
+
+    spec:
+      options:
+        banner: "~(function (app) {\n"
+        footer: "\n})(thinner.loader());\n"
+      dest: "<%= files.js.concatenatedSpec %>"
+      src: [
+          "<%= files.js.specHelpers %>"
+          "<%= files.coffee.generated %>"
+          "<%= files.coffee.generatedSpec %>"
+        ]
 
   copy:
     vendor:
