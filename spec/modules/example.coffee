@@ -1,7 +1,7 @@
 thinner (App) ->
 
   class App.Module
-    constructor: (app) ->
+    constructor: ->
       app.router.map (match) ->
         match('/example').to 'no_handler'
         match('/do/:test').to 'test_view'
