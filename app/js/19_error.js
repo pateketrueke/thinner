@@ -9,7 +9,7 @@
       err = String(exception).indexOf('route not found') === -1 ? 'errorHandler' : 'notFound';
 
       if ('function' === typeof app.classes[err]) {
-        klass = new app.classes[err](app);
+        klass = new app.classes[err]();
 
         // rethrow within possible
         if ('function' === typeof klass.exception) {

@@ -3,7 +3,7 @@
   var delegate = function (from, name) {
     var handler;
 
-    handler = new from.classes[name](from);
+    handler = new from.classes[name]();
 
     grow(from, handler);
     view(from, name, handler);

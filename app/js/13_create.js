@@ -1,6 +1,6 @@
 
   // constructor
-  var create = function (ns) {
+  var create = function () {
     var app,
         tmp = {};
 
@@ -14,24 +14,9 @@
       modules: [],
 
       // context
+      helpers: {},
       classes: {},
       handlers: {},
-
-      // functions
-      helpers: {},
-      imports: {},
-
-      exports: function (key, fn) {
-        var hash = {};
-
-        if ('function' === typeof fn) {
-          hash[key] = fn;
-        } else {
-          hash = key;
-        }
-
-        extend(app.imports, handle(app, hash));
-      },
 
 
       // templating
@@ -82,37 +67,30 @@
       },
 
 
-      // module loading
-      load: function (modules) {
-        var index,
-            module;
-
-        if ('object' !== typeof modules) {
-          modules = modules && [modules];
-        }
-
-        if (! modules || 0 === modules.length) {
-          throw new Error('That require some modules!');
-        }
-
-        initialize(app, modules);
-
-        return app;
-      },
-
-
       // start
       run: function (block) {
-        var klass,
-            module;
+        var ns = {},
+            klass, module;
 
+        // initialize
+        while (module = modules.shift()) {
+          module.call(app, ns);
+        }
+
+
+        // main module loader
         for (klass in ns) {
           if ('_' !== klass.charAt(0) && klass.charAt(0) === klass.charAt(0).toUpperCase()) {
-            app.load(ns[klass]);
+            if ('function' !== typeof ns[klass]) {
+              throw new Error('<' + ns[klass] + '> is not a module!');
+            }
+
+            app.modules.push(new ns[klass]());
           } else {
             app.classes[klass] = ns[klass];
           }
         }
+
 
         if ('function' === typeof block) {
           block(app);

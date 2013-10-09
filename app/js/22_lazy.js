@@ -12,7 +12,7 @@
           obj.view.teardown();
         }
 
-        obj = new from.classes[name][partial](from);
+        obj = new from.classes[name][partial]();
 
         params = obj.view || {};
         params.el = params.el || slug;

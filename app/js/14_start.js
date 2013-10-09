@@ -1,54 +1,36 @@
 
   // exports magic
-  var start = function () {
-    var app = {},
-        self = create(app),
-        module, events, evt;
-
-    // load modules
-    for (module in modules) {
-      modules[module].call(self, app);
-    }
-
+  var start = function (app) {
     // popstate events
     if (win.addEventListener) {
-      win.addEventListener('popstate', popstate(self));
+      win.addEventListener('popstate', popstate(app));
     } else if (win.attachEvent) {
-      win.attachEvent('popstate', popstate(self));
+      win.attachEvent('popstate', popstate(app));
     } else {
-      win.onpopstate = popstate(self);
-    }
-
-    // listen all events
-    events = 'string' === typeof settings.listen ? settings.listen.split(' ') : settings.listen;
-
-    while (evt = events.pop()) {
-      observe(self, evt);
+      win.onpopstate = popstate(app);
     }
 
 
-    self.router.updateURL = function(path) {
+    app.router.updateURL = function(path) {
       hist.pushState({ to: path }, doc.title, path);
     };
 
-    self.router.replaceURL = function (path) {
+    app.router.replaceURL = function (path) {
       hist.replaceState({ to: path }, doc.title, path);
     };
 
-    self.router.getHandler = function(name) {
-      return broker(self, name);
+    app.router.getHandler = function(name) {
+      return broker(app, name);
     };
 
-    self.router.redirectURL = function(path, update) {
+    app.router.redirectURL = function(path, update) {
       if (false !== update) {
-        self.router.updateURL(path);
-        self.history.push({ to: path });
+        app.router.updateURL(path);
+        app.history.push({ to: path });
       } else {
-        self.router.replaceURL(path);
+        app.router.replaceURL(path);
       }
 
-      return self.router.handleURL(path);
+      return app.router.handleURL(path);
     };
-
-    return self;
   };

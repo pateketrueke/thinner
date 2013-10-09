@@ -7,20 +7,15 @@
 
   // singleton
   thinner.loader = function (config) {
-    if (! running) {
-      thinner.setup(config);
-      root = elem(settings.el || 'body', doc);
-      running = start();
-    }
-
-    return running;
+    return scope(config);
   };
 
 
   // settings
   thinner.setup = function (block) {
     var key,
-        params = {};
+        params = {},
+        events, evt;
 
     if ('function' === typeof block) {
       block = block.call(params, params);
@@ -31,6 +26,20 @@
       for (key in block) {
         settings[key] = block[key] || settings[key];
       }
+    }
+
+    // reset
+    if (root) {
+      root.off('**');
+    }
+
+    root = elem(settings.el || 'body', doc);
+
+    // listen all events
+    events = 'string' === typeof settings.listen ? settings.listen.split(' ') : settings.listen;
+
+    for (evt in events) {
+      observe(running, events[evt]);
     }
   };
 

@@ -19,7 +19,7 @@
     locals.partial = function (path, vars) { return partial(path, vars, helpers); };
 
     try {
-      return view.call(null, locals);
+      return view(locals);
     } catch (exception) {
       throw new Error(String(exception) + ' (' + path +')');
     }
