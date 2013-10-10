@@ -8,7 +8,7 @@
     handler.partials = [];
 
     for (key in klass) {
-      if (klass.hasOwnProperty(key) && key.charAt() !== '_') {
+      if (klass.hasOwnProperty(key) && key.charAt(0) !== '_') {
         if (key in handler) {
           throw new Error('<' + partials[length] + '> already defined!');
         }
