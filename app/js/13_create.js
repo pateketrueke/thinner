@@ -69,29 +69,15 @@
 
       // start
       run: function (block) {
-        var ns = {},
-            klass, module;
-
-        // initialize
-        while (module = modules.shift()) {
-          module.call(app, ns);
-        }
-
+        var module;
 
         // main module loader
-        for (klass in ns) {
-          if ('_' !== klass.charAt(0) && klass.charAt(0) === klass.charAt(0).toUpperCase()) {
-            if ('function' !== typeof ns[klass]) {
-              throw new Error('<' + ns[klass] + '> is not a module!');
-            }
-
-            app.modules.push(new ns[klass]());
-          } else {
-            app.classes[klass] = ns[klass];
-          }
+        while (module = modules.shift()) {
+          module.call(app, app.classes);
         }
 
 
+        // initialize
         if ('function' === typeof block) {
           block(app);
         }
