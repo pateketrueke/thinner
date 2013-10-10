@@ -45,10 +45,8 @@ Of course you can replace all this dependencies by hand or using [Bower](http://
 
 ```coffeescript
 thinner (MyApp) ->
-  class MyApp.Main
-    constructor: ->
-      app.router.map (match) ->
-        match('/').to 'hello_world'
+  app.router.map (match) ->
+    match('/').to 'hello_world'
 
   class MyApp.helloWorld
     enter: -> console.log 'Hello World!'
