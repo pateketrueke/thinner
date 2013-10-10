@@ -1,32 +1,32 @@
 ## Operation and data consumption
 
-[router.js](https://github.com/tildeio/router.js) is the basis router used on [Ember.js](http://emberjs.com/), it's a fabulous project.
+[router.js](https://github.com/tildeio/router.js) is the base router used by [Ember.js](http://emberjs.com/), fabulous project.
 
-  - It provides you a strong mechanism to handle application states
-  - It even provides you with a model-like mechanism for consume your data
+  - It provides a strong mechanism to handle application states
+  - Also provides you with a model-like mechanism for consuming your data
 
 ## Presentation and data manipulation
 
-[Ractive.js](http://ractivejs.org/) is another giant to mention, it even does run without any router!
+[Ractive.js](http://ractivejs.org/) is another big boy worth mentioning, it runs without a router!
 
-  - It has data binding and event management included
-  - It uses a raw objects as model data source
+  - It includes data binding and event management
+  - It uses raw objects as model data sources
 
 ## Workflow and boilerplates
 
-[Lineman.js](http://linemanjs.com/) ables you work whatever you like to do.
+[Lineman.js](http://linemanjs.com/) lets you work whatever you like to do.
 
-  - Built for grunt, run anything you can
-  - Leaves you to organize your source code
+  - Built for grunt, run anything you want
+  - Organizing your source code is your responsability
 
 ## Common utilities
 
-  - [jQuery](http://jquery.com/) for DOM, Promises, Events, etc.
-  - [Lo-Dash](http://lodash.com) for data manipulation and FP.
+  - [jQuery](http://jquery.com/) used for DOM, Promises, Events, etc.
+  - [Lo-Dash](http://lodash.com) used for data manipulation and FP
 
 ## Thinner
 
-In order to work you'll add the dependencies listed below:
+In order to work, thinner needs:
 
 **vendor.yaml**
 
@@ -46,7 +46,7 @@ Of course you can replace all this dependencies by hand or using [Bower](http://
 ```coffeescript
 thinner (MyApp) ->
   class MyApp.Main
-    constructor: (app) ->
+    constructor: ->
       app.router.map (match) ->
         match('/').to 'hello_world'
 
@@ -57,7 +57,7 @@ thinner (MyApp) ->
 **app.js**
 
 ```javascript
-var app = thinner.loader().run(function () {
+thinner.loader().run(function (app) {
   app.go('/').then(function () {
     console.log('start');
   });
