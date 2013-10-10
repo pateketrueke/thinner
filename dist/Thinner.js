@@ -1,4 +1,4 @@
-/*! Thinner - v0.6.0 - 2013-10-08 */
+/*! Thinner - v0.7.0 - 2013-10-09 */
 (function (undefined) {
   
 
@@ -19,6 +19,7 @@
   // application config
   var settings = {
     el: 'body',
+    log: null,
     listen: 'click doubleclick submit input change', // basics (?)
     templates: global.JST || {}
   };
@@ -127,7 +128,7 @@
   var delegate = function (from, name) {
     var handler;
 
-    handler = new from.classes[name](from);
+    handler = new from.classes[name]();
 
     grow(from, handler);
     view(from, name, handler);
@@ -179,20 +180,6 @@
   };
 
 
-  // main module loader
-  var initialize = function (app, modules) {
-    var module;
-
-    for (module in modules) {
-      if ('function' !== typeof modules[module]) {
-        throw new Error('<' + modules[module] + '> is not a module!');
-      }
-
-      app.modules.push(new modules[module](app));
-    }
-  };
-
-
   // handle url changes
   var popstate = function (app) {
     return function (e) {
@@ -221,7 +208,7 @@
 
 
   // constructor
-  var create = function (ns) {
+  var create = function () {
     var app,
         tmp = {};
 
@@ -235,24 +222,9 @@
       modules: [],
 
       // context
+      helpers: {},
       classes: {},
       handlers: {},
-
-      // functions
-      helpers: {},
-      imports: {},
-
-      exports: function (key, fn) {
-        var hash = {};
-
-        if ('function' === typeof fn) {
-          hash[key] = fn;
-        } else {
-          hash = key;
-        }
-
-        extend(app.imports, handle(app, hash));
-      },
 
 
       // templating
@@ -299,42 +271,21 @@
               : ! count(params) ? app.router.replaceWith(path)
               : app.router.replaceWith(path, params);
           }
-        }, RSVP.reject());
-      },
-
-
-      // module loading
-      load: function (modules) {
-        var index,
-            module;
-
-        if ('object' !== typeof modules) {
-          modules = modules && [modules];
-        }
-
-        if (! modules || 0 === modules.length) {
-          throw new Error('That require some modules!');
-        }
-
-        initialize(app, modules);
-
-        return app;
+        }, RSVP.reject()).then(null, debug);
       },
 
 
       // start
       run: function (block) {
-        var klass,
-            module;
+        var module;
 
-        for (klass in ns) {
-          if ('_' !== klass.charAt(0) && klass.charAt(0) === klass.charAt(0).toUpperCase()) {
-            app.load(ns[klass]);
-          } else {
-            app.classes[klass] = ns[klass];
-          }
+        // main module loader
+        while (module = modules.shift()) {
+          module.call(app, app.classes);
         }
 
+
+        // initialize
         if ('function' === typeof block) {
           block(app);
         }
@@ -348,57 +299,44 @@
 
 
   // exports magic
-  var start = function () {
-    var app = {},
-        self = create(app),
-        module, events, evt;
-
-    // load modules
-    for (module in modules) {
-      modules[module].call(self, app);
-    }
-
+  var start = function (app) {
     // popstate events
     if (win.addEventListener) {
-      win.addEventListener('popstate', popstate(self));
+      win.addEventListener('popstate', popstate(app));
     } else if (win.attachEvent) {
-      win.attachEvent('popstate', popstate(self));
+      win.attachEvent('popstate', popstate(app));
     } else {
-      win.onpopstate = popstate(self);
-    }
-
-    // listen all events
-    events = 'string' === typeof settings.listen ? settings.listen.split(' ') : settings.listen;
-
-    while (evt = events.pop()) {
-      observe(self, evt);
+      win.onpopstate = popstate(app);
     }
 
 
-    self.router.updateURL = function(path) {
-      hist.pushState({ to: path }, doc.title, path);
-    };
+    // helpers
+    extend(app.router, {
+      log: debug,
 
-    self.router.replaceURL = function (path) {
-      hist.replaceState({ to: path }, doc.title, path);
-    };
+      updateURL: function(path) {
+        hist.pushState({ to: path }, doc.title, path);
+      },
 
-    self.router.getHandler = function(name) {
-      return broker(self, name);
-    };
+      replaceURL: function (path) {
+        hist.replaceState({ to: path }, doc.title, path);
+      },
 
-    self.router.redirectURL = function(path, update) {
-      if (false !== update) {
-        self.router.updateURL(path);
-        self.history.push({ to: path });
-      } else {
-        self.router.replaceURL(path);
+      getHandler: function(name) {
+        return broker(app, name);
+      },
+
+      redirectURL: function(path, update) {
+        if (false !== update) {
+          app.router.updateURL(path);
+          app.history.push({ to: path });
+        } else {
+          app.router.replaceURL(path);
+        }
+
+        return app.router.handleURL(path);
       }
-
-      return self.router.handleURL(path);
-    };
-
-    return self;
+    });
   };
 
 
@@ -455,8 +393,10 @@
     } catch (exception) {
       err = String(exception).indexOf('route not found') === -1 ? 'errorHandler' : 'notFound';
 
+      debug(exception);
+
       if ('function' === typeof app.classes[err]) {
-        klass = new app.classes[err](app);
+        klass = new app.classes[err]();
 
         // rethrow within possible
         if ('function' === typeof klass.exception) {
@@ -482,7 +422,7 @@
     handler.partials = [];
 
     for (key in klass) {
-      if (klass.hasOwnProperty(key) && key.charAt() !== '_') {
+      if (klass.hasOwnProperty(key) && key.charAt(0) !== '_') {
         if (key in handler) {
           throw new Error('<' + partials[length] + '> already defined!');
         }
@@ -507,7 +447,7 @@
           obj.view.teardown();
         }
 
-        obj = new from.classes[name][partial](from);
+        obj = new from.classes[name][partial]();
 
         params = obj.view || {};
         params.el = params.el || slug;
@@ -567,7 +507,7 @@
     locals.partial = function (path, vars) { return partial(path, vars, helpers); };
 
     try {
-      return view.call(null, locals);
+      return view(locals);
     } catch (exception) {
       throw new Error(String(exception) + ' (' + path +')');
     }
@@ -584,6 +524,31 @@
   };
 
 
+  // set local-scope
+  var scope = function (config) {
+    var app = {};
+
+    if (! running) {
+      running = create(app);
+      start(running);
+    }
+
+    if (config) {
+      thinner.setup(config);
+    }
+
+    return running;
+  };
+
+
+  // common logging
+  var debug = function (e) {
+    if ('function' === typeof settings.log) {
+      settings.log(e.stack ? [String(e), e.stack.replace(/^(?=\S)/mg, '  - ')].join('\n') : e);
+    }
+  };
+
+
   // some isolation
   var thinner = function (block) {
     modules.push(block);
@@ -592,20 +557,15 @@
 
   // singleton
   thinner.loader = function (config) {
-    if (! running) {
-      thinner.setup(config);
-      root = elem(settings.el || 'body', doc);
-      running = start();
-    }
-
-    return running;
+    return scope(config);
   };
 
 
   // settings
   thinner.setup = function (block) {
     var key,
-        params = {};
+        params = {},
+        events, evt;
 
     if ('function' === typeof block) {
       block = block.call(params, params);
@@ -616,6 +576,20 @@
       for (key in block) {
         settings[key] = block[key] || settings[key];
       }
+    }
+
+    // reset
+    if (root) {
+      root.off('**');
+    }
+
+    root = elem(settings.el || 'body', doc);
+
+    // listen all events
+    events = 'string' === typeof settings.listen ? settings.listen.split(' ') : settings.listen;
+
+    for (evt in events) {
+      observe(running, events[evt]);
     }
   };
 
