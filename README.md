@@ -1,6 +1,6 @@
 ## Operation and data consumption
 
-[router.js](https://github.com/tildeio/router.js) is the base router used by [Ember.js](http://emberjs.com/), fabulous project.
+[router.js](https://github.com/tildeio/router.js) is the base router used by Ember.js, fabulous project.
 
   - It provides a strong mechanism to handle application states
   - Also provides you with a model-like mechanism for consuming your data
@@ -28,42 +28,72 @@
 
 In order to work, thinner needs:
 
-**vendor.yaml**
-
-```yaml
-js:
-  - thinner/dist/bundle/jquery.js
-  - thinner/dist/bundle/rsvp-latest.js
-  - thinner/dist/bundle/route-recognizer.js
-  - thinner/dist/bundle/router.js
-  - thinner/dist/Thinner.js
+**bower.json**
+```json
+{
+  "dependencies": {
+    "thinner": "*",
+    "ractive": "*",
+    "lodash": "*"
+  }
+}
 ```
 
-Of course you can replace all this dependencies by hand or using [Bower](http://bower.com/),
+**index.html**
 
-**example.coffee**
+```html
+<script src="bower_components/thinner/dist/bundle/jquery.js"></script>
+<script src="bower_components/thinner/dist/bundle/rsvp-latest.js"></script>
+<script src="bower_components/thinner/dist/bundle/route-recognizer.js"></script>
+<script src="bower_components/thinner/dist/bundle/router.js"></script>
+<script src="bower_components/thinner/dist/Thinner.js"></script>
+```
+
+Of course you can write your application using CoffeeScript:
+
+**app.coffee**
 
 ```coffeescript
 ((app) ->
+
+  thinner (module) ->
+    class module.helloWorld
+      enter: -> console.log 'Hello World!'
+
   app.router.map (match) ->
     match('/').to 'hello_world'
 
-  thinner (MyApp) ->
-    class MyApp.helloWorld
-      enter: -> console.log 'Hello World!'
+  app.run ->
+    app.go '/'
+
 )(thinner.loader())
 ```
+
+using plain JavaScript:
 
 **app.js**
 
 ```javascript
-thinner.loader().run(function (app) {
-  app.go('/').then(function () {
-    console.log('start');
+(function (app) {
+
+  thinner(function (module) {
+    module.helloWorld = function () {};
+    module.helloWorld.prototype.enter = function () {
+      console.log('Hello World!');
+    };
   });
-});
+
+  app.router.map(function (match) {
+    match('/').to('hello_world');
+  });
+
+  app.run(function () {
+    app.go('/');
+  });
+
+})(thinner.loader());
 ```
 
-Or just clone [this](https://github.com/pateketrueke/lineman-template) Lineman template.
+or just cloning [this](https://github.com/pateketrueke/lineman-template) Lineman template.
 
 [![Build Status](https://travis-ci.org/pateketrueke/thinner.png)](https://travis-ci.org/pateketrueke/thinner)
