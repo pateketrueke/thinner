@@ -20,11 +20,11 @@ module.exports = lineman.config.extend "application",
   ]
 
   prependTasks:
-    common: ["bower:install", "blanket"]
+    common: ["bower:install"]
 
   appendTasks:
     dist: ["concat:dist", "uglify:js", "copy"]
-    common: ["concat:vendor", "concat:testm", "concat:spec", "concat:app"]
+    common: ["concat:vendor", "concat:testm", "concat:spec", "concat:app", "blanket"]
 
   removeTasks:
     common: ["less", "handlebars", "jst", "images:dev", "webfonts:dev", "pages:dev", "concat"]
