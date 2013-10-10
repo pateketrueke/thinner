@@ -40,7 +40,7 @@ module.exports = lineman.config.extend "application",
 
     js:
       files: ["<%= files.js.app.files %>"]
-      tasks: ["blanket", "concat:app"]
+      tasks: ["concat:app", "blanket"]
 
   clean:
     js:
