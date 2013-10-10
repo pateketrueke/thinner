@@ -1,13 +1,5 @@
 thinner (App) ->
 
-  class App.Module
-    constructor: ->
-      app.router.map (match) ->
-        match('/example').to 'no_handler'
-        match('/do/:test').to 'test_view'
-        match('/some_path').to 'my.handler'
-        match('/some/actions').to 'explode_this'
-
   class App.explodeThis
     constructor: ->
       $('body').append '<a data-action="baz" class="js-action"></a>'
