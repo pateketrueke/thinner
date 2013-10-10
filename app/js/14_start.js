@@ -11,26 +11,31 @@
     }
 
 
-    app.router.updateURL = function(path) {
-      hist.pushState({ to: path }, doc.title, path);
-    };
+    // helpers
+    extend(app.router, {
+      log: debug,
 
-    app.router.replaceURL = function (path) {
-      hist.replaceState({ to: path }, doc.title, path);
-    };
+      updateURL: function(path) {
+        hist.pushState({ to: path }, doc.title, path);
+      },
 
-    app.router.getHandler = function(name) {
-      return broker(app, name);
-    };
+      replaceURL: function (path) {
+        hist.replaceState({ to: path }, doc.title, path);
+      },
 
-    app.router.redirectURL = function(path, update) {
-      if (false !== update) {
-        app.router.updateURL(path);
-        app.history.push({ to: path });
-      } else {
-        app.router.replaceURL(path);
+      getHandler: function(name) {
+        return broker(app, name);
+      },
+
+      redirectURL: function(path, update) {
+        if (false !== update) {
+          app.router.updateURL(path);
+          app.history.push({ to: path });
+        } else {
+          app.router.replaceURL(path);
+        }
+
+        return app.router.handleURL(path);
       }
-
-      return app.router.handleURL(path);
-    };
+    });
   };

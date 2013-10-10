@@ -63,7 +63,7 @@
               : ! count(params) ? app.router.replaceWith(path)
               : app.router.replaceWith(path, params);
           }
-        }, RSVP.reject());
+        }, RSVP.reject()).then(null, debug);
       },
 
 

@@ -18,6 +18,7 @@
   // application config
   var settings = {
     el: 'body',
+    log: null,
     listen: 'click doubleclick submit input change', // basics (?)
     templates: global.JST || {}
   };

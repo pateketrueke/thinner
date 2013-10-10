@@ -8,6 +8,8 @@
     } catch (exception) {
       err = String(exception).indexOf('route not found') === -1 ? 'errorHandler' : 'notFound';
 
+      debug(exception);
+
       if ('function' === typeof app.classes[err]) {
         klass = new app.classes[err]();
 
