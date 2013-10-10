@@ -44,12 +44,14 @@ Of course you can replace all this dependencies by hand or using [Bower](http://
 **example.coffee**
 
 ```coffeescript
-thinner (MyApp) ->
+((app) ->
   app.router.map (match) ->
     match('/').to 'hello_world'
 
-  class MyApp.helloWorld
-    enter: -> console.log 'Hello World!'
+  thinner (MyApp) ->
+    class MyApp.helloWorld
+      enter: -> console.log 'Hello World!'
+)(thinner.loader())
 ```
 
 **app.js**
