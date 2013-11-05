@@ -1,6 +1,6 @@
 {
   "name": "Thinner",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Volatile tools",
   "homepage": "https://github.com/pateketrueke/thinner",
   "author": {
@@ -10,8 +10,8 @@
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-copy": "~0.4.1",
-    "grunt-bower-task": "~0.2.3",
+    "grunt-bower-task": "~0.3.2",
     "grunt-blanket": "0.0.8",
-    "lineman": "~>0.14.4"
+    "lineman": "~>0.15.0"
   }
 }

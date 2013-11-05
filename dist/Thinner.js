@@ -1,4 +1,4 @@
-/*! Thinner - v0.7.0 - 2013-10-09 */
+/*! Thinner - v0.7.1 - 2013-11-05 */
 (function (undefined) {
   
 
@@ -591,6 +591,14 @@
     for (evt in events) {
       observe(running, events[evt]);
     }
+  };
+
+
+  // runner
+  thinner.bind = function (block) {
+    var that = scope();
+
+    block.call(that, that);
   };
 
 

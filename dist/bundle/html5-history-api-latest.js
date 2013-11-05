@@ -1,5 +1,5 @@
-/*
- * History API JavaScript Library v4.0.5
+/*!
+ * History API JavaScript Library v4.0.8
  *
  * Support: IE6+, FF3+, Opera 9+, Safari, Chrome and other
  *
@@ -11,7 +11,7 @@
  *   http://www.opensource.org/licenses/mit-license.php
  *   http://www.gnu.org/licenses/gpl.html
  *
- * Update: 20.08.13 21:16
+ * Update: 2013-10-31 16:06
  */
 (function(window) {
     // Prevent the code from running if there is no window.history object
@@ -72,6 +72,8 @@
     var stateStorage = {};
     // in this object will be stored custom handlers
     var eventsList = {};
+    // stored last title
+    var lastTitle = document.title;
 
     /**
      * Properties that will be replaced in the global
@@ -142,8 +144,14 @@
          * @param {string} [url]
          */
         pushState: function(state, title, url) {
+            var t = document.title;
+            if (lastTitle != null) {
+                document.title = lastTitle;
+            }
             historyPushState && fastFixChrome(historyPushState, arguments);
             changeState(state, url);
+            document.title = t;
+            lastTitle = title;
         },
         /**
          * The method updates the state object,
@@ -156,9 +164,15 @@
          * @param {string} [url]
          */
         replaceState: function(state, title, url) {
+            var t = document.title;
+            if (lastTitle != null) {
+                document.title = lastTitle;
+            }
             delete stateStorage[windowLocation.href];
             historyReplaceState && fastFixChrome(historyReplaceState, arguments);
             changeState(state, url, true);
+            document.title = t;
+            lastTitle = title;
         },
         /**
          * Object 'history.location' is similar to the
@@ -332,8 +346,10 @@
      */
     function parseURL(href, isWindowLocation, isNotAPI) {
         var re = /(?:([\w0-9]+:))?(?:\/\/(?:[^@]*@)?([^\/:\?#]+)(?::([0-9]+))?)?([^\?#]*)(?:(\?[^#]+)|\?)?(?:(#.*))?/;
-        if (href && !isWindowLocation) {
+        if (href != null && href !== '' && !isWindowLocation) {
             var current = parseURL(), _pathname = current._pathname, _protocol = current._protocol;
+            // convert to type of string
+            href = '' + href;
             // convert relative link to the absolute
             href = /^(?:[\w0-9]+\:)?\/\//.test(href) ? href.indexOf("/") === 0
                 ? _protocol + href : href : _protocol + "//" + current._host + (
@@ -764,13 +780,26 @@
     }
 
     /**
-     * handler url with anchor for non-HTML5 browsers
+     * Finds the closest ancestor anchor element (including the target itself).
      *
-     * @param e
+     * @param {HTMLElement} target The element to start scanning from.
+     * @return {HTMLElement} An element which is the closest ancestor anchor.
+     */
+    function anchorTarget(target) {
+        while (target) {
+            if (target.nodeName === 'A') return target;
+            target = target.parentNode;
+        }
+    }
+
+    /**
+     * Handles anchor elements with a hash fragment for non-HTML5 browsers
+     *
+     * @param {Event} e
      */
     function onAnchorClick(e) {
         var event = e || window.event;
-        var target = event.target || event.srcElement;
+        var target = anchorTarget(event.target || event.srcElement);
         var defaultPrevented = "defaultPrevented" in event ? event['defaultPrevented'] : event.returnValue === false;
         if (target && target.nodeName === "A" && !defaultPrevented) {
             var current = parseURL();
