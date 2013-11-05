@@ -32,8 +32,7 @@ In order to work, thinner needs:
 {
   "dependencies": {
     "thinner": "*",
-    "ractive": "*",
-    "lodash": "*"
+    "ractive": "*"
   }
 }
 ```
