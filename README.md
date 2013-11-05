@@ -22,7 +22,6 @@
 ## Common utilities
 
   - [jQuery](http://jquery.com/) used for DOM, Promises, Events, etc.
-  - [Lo-Dash](http://lodash.com) used for data manipulation and FP
 
 ## Thinner
 
