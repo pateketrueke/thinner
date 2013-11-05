@@ -44,6 +44,14 @@
   };
 
 
+  // runner
+  thinner.bind = function (block) {
+    var that = scope();
+
+    block.call(that, that);
+  };
+
+
   // expose
   if ('undefined' !== typeof module && module.exports) {
     module.exports = thinner;
