@@ -36,7 +36,7 @@
   var elem = function () {
     var $;
 
-    if (! ($ = global.Zepto || global.jQuery || global.$)) {
+    if (! ($ = settings.$)) {
       throw new Error('jQuery-compatible library is required!');
     }
 

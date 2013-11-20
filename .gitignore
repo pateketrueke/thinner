@@ -5,3 +5,5 @@
 /generated
 /node_modules
 /vendor/components
+.idea/
+thinner.iml

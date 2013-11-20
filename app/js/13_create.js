@@ -7,7 +7,7 @@
     // instance
     return app = {
       // router.js
-      router: new Router(),
+      router: settings.router,
 
       // setup
       history: [],

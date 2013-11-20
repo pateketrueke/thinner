@@ -20,7 +20,9 @@
     el: 'body',
     log: null,
     listen: 'click doubleclick submit input change', // basics (?)
-    templates: global.JST || {}
+    templates: global.JST || {},
+    router : null,
+    $: null
   };
 
 

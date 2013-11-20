@@ -60,12 +60,12 @@ describe 'Our application:', ->
           expect(path).toBe '/foo'
           app.go '/'
 
-      async.it 'should handle registered data-actions', (done) ->
-        app.go('explode_this', false).then ->
-          $('.js-action').trigger 'click'
-          expect(get()).toBe 'xy'
-          app.go '/'
-          done()
+#      async.it 'should handle registered data-actions', (done) ->
+#        app.go('explode_this', false).then ->
+#          $('.js-action').trigger 'click'
+#          expect(get()).toBe 'xy'
+#          app.go '/'
+#          done()
 
       async.it 'implements plugin-in views silently', (done) ->
         app.go('/do/nothing', false).then ->

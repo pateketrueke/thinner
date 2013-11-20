@@ -95,8 +95,8 @@ module.exports = lineman.config.extend "application",
 
     spec:
       options:
-        banner: "~(function (app) {\n"
-        footer: "\n})(thinner.loader());\n"
+        banner: "~(function () {\n"
+        footer: "\n})();\n"
       dest: "<%= files.js.concatenatedSpec %>"
       src: [
           "<%= files.js.specHelpers %>"
