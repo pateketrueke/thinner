@@ -1,4 +1,4 @@
-/*! Thinner - v0.7.1 - 2013-11-05 */
+/*! Thinner - v0.7.1 - 2013-11-20 */
 (function (undefined) {
   
 

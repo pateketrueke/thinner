@@ -11,11 +11,13 @@
     "package.json",
     "README.md"
   ],
-  "devDependencies": {
+  "dependencies" : {
     "route-recognizer": "https://github.com/tildeio/route-recognizer.git",
     "router.js": "https://github.com/tildeio/router.js.git",
-    "jasmine.async": "~0.1.0",
-    "blanket": "~1.1.5",
     "jquery": "~1.10.2"
+  },
+  "devDependencies": {
+    "jasmine.async": "~0.1.0",
+    "blanket": "~1.1.5"
   }
 }
