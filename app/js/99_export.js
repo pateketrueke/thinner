@@ -28,18 +28,17 @@
       }
     }
 
-    // reset
-    if (root) {
-      root.off('**');
-    }
+    if (settings.el) {
+      // reset
+      root && root.off('**');
+      root = elem(settings.el);
 
-    root = elem(settings.el || 'body', doc);
+      // listen all events
+      events = 'string' === typeof settings.listen ? settings.listen.split(' ') : settings.listen;
 
-    // listen all events
-    events = 'string' === typeof settings.listen ? settings.listen.split(' ') : settings.listen;
-
-    for (evt in events) {
-      observe(running, events[evt]);
+      for (evt in events) {
+        observe(running, events[evt]);
+      }
     }
   };
 

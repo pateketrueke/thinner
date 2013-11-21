@@ -1,6 +1,10 @@
 
   // exports magic
   var start = function (app) {
+    var win = settings.context['window'] || window,
+        doc = settings.context['document'] || document,
+        hist = settings.context['history'] || window.history;
+
     // popstate events
     if (win.addEventListener) {
       win.addEventListener('popstate', popstate(app));
@@ -16,11 +20,11 @@
       log: debug,
 
       updateURL: function(path) {
-        hist.pushState({ to: path }, doc.title, path);
+        hist && hist.pushState({ to: path }, doc.title, path);
       },
 
       replaceURL: function (path) {
-        hist.replaceState({ to: path }, doc.title, path);
+        hist && hist.replaceState({ to: path }, doc.title, path);
       },
 
       getHandler: function(name) {
