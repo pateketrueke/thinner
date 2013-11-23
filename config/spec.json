@@ -5,7 +5,6 @@
   "src_files" : [
     "generated/js/testm.js",
     "generated/js/spec.helpers.js",
-    "generated/coverage/main.js",
     "generated/js/vendor.js",
     "generated/js/bundle.js"
   ]
