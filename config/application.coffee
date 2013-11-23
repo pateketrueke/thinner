@@ -99,9 +99,6 @@ module.exports = lineman.config.extend "application",
     dist:
       files: [
         { src: "<%= files.js.app.concatenated %>", dest: "<%= files.js.app.concatenatedDist %>" }
-        { src: "node_modules/route-recognizer.js", dest: "dist/lib/route-recognizer.js" }
-        { src: "node_modules/router.js", dest: "dist/lib/router.js" }
-        { src: "node_modules/rsvp.js", dest: "dist/lib/rsvp.js" }
       ]
 
   browserify:
