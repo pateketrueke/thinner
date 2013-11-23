@@ -32,7 +32,12 @@
       },
 
       getHandler: function(name) {
-        return broker(app, name);
+        var handler = broker(app, name);
+
+        // TODO: extract settings from handler
+        bind(settings.el, settings.listen);
+
+        return handler;
       },
 
       redirectURL: function(path, update) {
