@@ -6,8 +6,8 @@
 
 
   // singleton
-  thinner.loader = function (config) {
-    return scope(config);
+  thinner.scope = function (config) {
+    return loader(config);
   };
 
 
@@ -28,9 +28,12 @@
       }
     }
 
+    if (root) {
+      root.off('**');
+    }
+
     if (settings.el) {
       // reset
-      root && root.off('**');
       root = elem(settings.el);
 
       // listen all events
@@ -40,14 +43,18 @@
         observe(running, events[evt]);
       }
     }
+
+    return thinner;
   };
 
 
   // runner
   thinner.bind = function (block) {
-    var that = scope();
+    var that = loader();
 
     block.call(that, that);
+
+    return thinner;
   };
 
 

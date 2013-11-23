@@ -1,6 +1,6 @@
 
   // set local-scope
-  var scope = function (config) {
+  var loader = function (config) {
     var app = {};
 
     if (! running) {
