@@ -24,8 +24,8 @@ module.exports = lineman.config.extend "application",
     common: ["bower:install"]
 
   appendTasks:
-    dist: ["copy:dist"]
-    common: ["concat:app", "concat:vendor", "browserify"]
+    dist: ["copy:dist", "uglify:js"]
+    common: ["concat:app", "concat:spec", "concat:testm", "concat:vendor", "browserify"]
 
   removeTasks:
     common: ["less", "handlebars", "jst", "images:dev", "webfonts:dev", "pages:dev", "concat"]
@@ -33,7 +33,7 @@ module.exports = lineman.config.extend "application",
     dist: ["cssmin", "images:dist", "webfonts:dist", "pages:dist", "uglify"]
 
   watch:
-    coffee:
+    coffeeSpecs:
       tasks: ["coffee", "concat:spec", "blanket", "browserify"]
 
     lint:
@@ -79,21 +79,16 @@ module.exports = lineman.config.extend "application",
       src: "<%= files.js.testm.files %>"
       dest: "<%= files.js.testm.concatenated %>"
 
+    spec:
+      src: "<%= files.js.specHelpers %>"
+      dest: "<%= files.js.concatenatedHelpers %>"
+
     app:
       options:
         process: (src, filepath) ->
           _(src.split "\n").map((line) -> line.replace(/^\/\/!/, '')).join "\n"
       files:
         "<%= files.js.app.concatenated %>": "<%= files.js.app.files %>"
-
-    spec:
-      dest: "<%= files.js.concatenatedSpec %>"
-      src: [
-          "app/main.js"
-          "<%= files.js.specHelpers %>"
-          "<%= files.coffee.generated %>"
-          "<%= files.coffee.generatedSpec %>"
-        ]
 
   copy:
     dist:
@@ -104,8 +99,13 @@ module.exports = lineman.config.extend "application",
   browserify:
     dev:
       files:
-        "<%= files.js.app.concatenatedDev %>": "app/main.js"
+        "<%= files.js.app.concatenatedDev %>": "<%= files.coffee.generatedSpec %>"
       options:
         alias: [
           "<%= files.js.app.concatenated %>:thinner"
         ]
+
+  uglify:
+    js:
+      src: "<%= files.js.app.concatenatedDist %>"
+      dest: "<%= files.js.app.minifiedDist %>"

@@ -2,12 +2,11 @@
   "framework" : "jasmine",
   "launch_in_dev" : ["Chrome", "Chromium"],
   "launch_in_ci" : ["PhantomJS"],
-  "before_tests": "lineman grunt concat:testm concat:spec blanket browserify",
   "src_files" : [
     "generated/js/testm.js",
-    "generated/js/vendor.js",
-    "generated/js/bundle.js",
+    "generated/js/spec.helpers.js",
     "generated/coverage/main.js",
-    "generated/js/spec/main.js"
+    "generated/js/vendor.js",
+    "generated/js/bundle.js"
   ]
 }

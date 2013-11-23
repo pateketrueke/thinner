@@ -22,6 +22,7 @@ module.exports = lineman.config.extend "files",
       concatenated: "generated/js/app/main.js"
       concatenatedDev: "generated/js/bundle.js"
       concatenatedDist: "dist/<%= pkg.name %>.js"
+      minifiedDist: "dist/<%= pkg.name %>.min.js"
 
     testm:
       files: [
@@ -36,4 +37,4 @@ module.exports = lineman.config.extend "files",
       ]
       concatenated: "generated/js/vendor.js"
 
-    concatenatedSpec: "generated/js/spec/main.js"
+    concatenatedHelpers: "generated/js/spec.helpers.js"

@@ -13,6 +13,7 @@
   ],
   "devDependencies": {
     "jasmine.async": "~0.1.0",
-    "blanket": "~1.1.5"
+    "blanket": "~1.1.5",
+    "jquery": "~2.0.3"
   }
 }
