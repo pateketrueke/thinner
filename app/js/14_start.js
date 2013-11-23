@@ -20,11 +20,15 @@
       log: debug,
 
       updateURL: function(path) {
-        hist && hist.pushState({ to: path }, doc.title, path);
+        if (hist.pushState) {
+          hist.pushState({ to: path }, doc.title, path);
+        }
       },
 
       replaceURL: function (path) {
-        hist && hist.replaceState({ to: path }, doc.title, path);
+        if (hist.replaceState) {
+          hist.replaceState({ to: path }, doc.title, path);
+        }
       },
 
       getHandler: function(name) {
