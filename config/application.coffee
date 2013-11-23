@@ -14,6 +14,7 @@ _ = grunt.util._
 
 module.exports = lineman.config.extend "application",
   loadNpmTasks: [
+    "grunt-browserify"
     "grunt-contrib-copy"
     "grunt-bower-task"
     "grunt-blanket"
@@ -23,8 +24,8 @@ module.exports = lineman.config.extend "application",
     common: ["bower:install"]
 
   appendTasks:
-    dist: ["concat:dist", "uglify:js", "copy"]
-    common: ["concat:vendor", "concat:testm", "concat:spec", "concat:app", "blanket"]
+    dist: ["copy:dist"]
+    common: ["concat:app", "concat:vendor", "browserify"]
 
   removeTasks:
     common: ["less", "handlebars", "jst", "images:dev", "webfonts:dev", "pages:dev", "concat"]
@@ -33,14 +34,14 @@ module.exports = lineman.config.extend "application",
 
   watch:
     coffee:
-      tasks: ["coffee", "concat:spec"]
+      tasks: ["coffee", "concat:spec", "blanket", "browserify"]
 
     lint:
       files: ["<%= files.js.app.files %>"]
 
     js:
       files: ["<%= files.js.app.files %>"]
-      tasks: ["concat:app", "blanket"]
+      tasks: ["concat:app", "browserify"]
 
   clean:
     js:
@@ -78,14 +79,6 @@ module.exports = lineman.config.extend "application",
       src: "<%= files.js.testm.files %>"
       dest: "<%= files.js.testm.concatenated %>"
 
-    dist:
-      options:
-        banner: "/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today(\"yyyy-mm-dd\") %> */\n"
-        process: (src, filepath) ->
-          src.replace /["']use strict['"]\s*;?/g, ''
-      files:
-        "<%= files.js.app.concatenatedDist %>": "<%= files.js.app.concatenated %>"
-
     app:
       options:
         process: (src, filepath) ->
@@ -94,25 +87,28 @@ module.exports = lineman.config.extend "application",
         "<%= files.js.app.concatenated %>": "<%= files.js.app.files %>"
 
     spec:
-      options:
-        banner: "~(function () {\n"
-        footer: "\n})();\n"
       dest: "<%= files.js.concatenatedSpec %>"
       src: [
+          "app/main.js"
           "<%= files.js.specHelpers %>"
           "<%= files.coffee.generated %>"
           "<%= files.coffee.generatedSpec %>"
         ]
 
   copy:
-    vendor:
+    dist:
       files: [
-        { expand: true, flatten: true, src: [
-          "<%= files.js.vendor.files %>"
-        ], dest: "<%= files.js.vendorDistDest %>", filter: "isFile" }
+        { src: "<%= files.js.app.concatenated %>", dest: "<%= files.js.app.concatenatedDist %>" }
+        { src: "node_modules/route-recognizer.js", dest: "dist/lib/route-recognizer.js" }
+        { src: "node_modules/router.js", dest: "dist/lib/router.js" }
+        { src: "node_modules/rsvp.js", dest: "dist/lib/rsvp.js" }
       ]
 
-  uglify:
-    js:
-      src: "<%= files.js.app.concatenatedDist %>"
-      dest: "<%= files.js.app.minifiedDist %>"
+  browserify:
+    dev:
+      files:
+        "<%= files.js.app.concatenatedDev %>": "app/main.js"
+      options:
+        alias: [
+          "<%= files.js.app.concatenated %>:thinner"
+        ]

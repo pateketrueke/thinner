@@ -1,6 +1,6 @@
 {
-  "name": "Thinner",
-  "version": "0.7.2",
+  "name": "thinner",
+  "version": "0.8.0",
   "ignore": [
     ".*",
     "app",
@@ -11,11 +11,6 @@
     "package.json",
     "README.md"
   ],
-  "dependencies" : {
-    "route-recognizer": "https://github.com/tildeio/route-recognizer.git",
-    "router.js": "https://github.com/tildeio/router.js.git",
-    "jquery": "~1.10.2"
-  },
   "devDependencies": {
     "jasmine.async": "~0.1.0",
     "blanket": "~1.1.5"

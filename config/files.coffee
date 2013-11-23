@@ -20,8 +20,8 @@ module.exports = lineman.config.extend "files",
     app:
       files: ["app/js/**/*.js"]
       concatenated: "generated/js/app/main.js"
+      concatenatedDev: "generated/js/bundle.js"
       concatenatedDist: "dist/<%= pkg.name %>.js"
-      minifiedDist: "dist/<%= pkg.name %>.min.js"
 
     testm:
       files: [
@@ -32,12 +32,8 @@ module.exports = lineman.config.extend "files",
 
     vendor:
       files: [
-        "vendor/js/**/*.js"
         "vendor/components/jquery/jquery.js"
-        "vendor/components/route-recognizer/dist/route-recognizer.js"
-        "vendor/components/router.js/dist/router.js"
       ]
       concatenated: "generated/js/vendor.js"
 
-    vendorDistDest: "dist/bundle"
     concatenatedSpec: "generated/js/spec/main.js"
