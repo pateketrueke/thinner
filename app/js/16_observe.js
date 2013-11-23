@@ -10,7 +10,7 @@
         current = app.router.currentHandlerInfos[key].handler;
 
         if ('object' === typeof current.actions) {
-          el = elem(e.currentTarget);
+          el = $(e.currentTarget);
           action = el.data('action');
 
           for (data in current.actions) {

@@ -30,19 +30,3 @@
 
     return length;
   };
-
-
-  // CSS selector/DOM utility
-  var elem = function () {
-    var $;
-
-    if (! ($ = settings.$)) {
-      throw new Error('jQuery-compatible library is required!');
-    }
-
-    if (! arguments.length) {
-      return $;
-    }
-
-    return $.apply($, arguments);
-  };
