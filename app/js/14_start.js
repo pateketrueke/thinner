@@ -1,9 +1,17 @@
 
   // exports magic
   var start = function (app) {
-    var win = settings.context['window'] || window,
-        doc = settings.context['document'] || document,
-        hist = settings.context['history'] || window.history;
+    var win, doc, hist;
+
+    if ('undefined' !== typeof window) {
+      win = window;
+      hist = window.history;
+      doc = window.document;
+    }
+
+    win = settings.context['window'] || win || {};
+    doc = settings.context['document'] || doc || {};
+    hist = settings.context['history'] || hist || {};
 
     // popstate events
     if (win.addEventListener) {
