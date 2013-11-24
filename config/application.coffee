@@ -102,7 +102,10 @@ module.exports = lineman.config.extend "application",
         "<%= files.js.app.concatenatedDev %>": "<%= files.coffee.generatedSpec %>"
       options:
         alias: [
-          "generated/coverage/main.js:thinner"
+          "<%= files.js.app.concatenated %>:thinner"
+          "node_modules/route-recognizer.js:route-recognizer"
+          "node_modules/router.js:router"
+          "node_modules/rsvp.js:rsvp"
         ]
 
   uglify:
