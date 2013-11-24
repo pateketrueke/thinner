@@ -1,97 +1,43 @@
-## Operation and data consumption
-
-[router.js](https://github.com/tildeio/router.js) is the base router used by Ember.js, fabulous project.
+**thinner** is built-in on top of [router.js](https://github.com/tildeio/router.js):
 
   - It provides a strong mechanism to handle application states
   - Also provides you with a model-like mechanism for consuming your data
 
-## Presentation and data manipulation
-
-[Ractive.js](http://ractivejs.org/) is another big boy worth mentioning, it runs without a router!
-
-  - It includes data binding and event management
-  - It uses raw objects as model data sources
-
-## Workflow and boilerplates
-
-[Lineman.js](http://linemanjs.com/) lets you work whatever you like to do.
-
-  - Built for grunt, run anything you want
-  - Organizing your source code is your responsability
-
-## Common utilities
-
-  - [jQuery](http://jquery.com/) used for DOM, Promises, Events, etc.
-
-## Thinner
-
 In order to work, thinner needs:
 
-**bower.json**
-```json
-{
-  "dependencies": {
-    "thinner": "*",
-    "ractive": "*"
-  }
-}
-```
+  - route-recognizer.js ([source](https://raw.github.com/tildeio/route-recognizer/master/dist/route-recognizer.js))
+  - rsvp.js ([source](http://rsvpjs-builds.s3.amazonaws.com/rsvp-latest.js))
+  - router.js ([source](http://routerjs.builds.emberjs.com.s3.amazonaws.com/router.js))
 
-**index.html**
+Also you can include [RactiveJS](https://github.com/Rich-Harris/Ractive) and [jQuery](https://github.com/jquery/jquery) to
+provide action handling and data-binding within your views.
 
-```html
-<script src="bower_components/thinner/dist/bundle/jquery.js"></script>
-<script src="bower_components/thinner/dist/bundle/rsvp-latest.js"></script>
-<script src="bower_components/thinner/dist/bundle/route-recognizer.js"></script>
-<script src="bower_components/thinner/dist/bundle/router.js"></script>
-<script src="bower_components/thinner/dist/Thinner.js"></script>
-```
+## Installation
 
-Of course you can write your application using CoffeeScript:
-
-**app.coffee**
-
-```coffeescript
-((app) ->
-
-  thinner (module) ->
-    class module.helloWorld
-      enter: -> console.log 'Hello World!'
-
-  app.router.map (match) ->
-    match('/').to 'hello_world'
-
-  app.run ->
-    app.go '/'
-
-)(thinner.loader())
-```
-
-using plain JavaScript:
+You can install **thinner** using NPM or Bower, just remember the dependencies for it.
 
 **app.js**
 
 ```javascript
-(function (app) {
+var app = thinner.setup({
+  router: new Router()
+}).scope();
 
-  thinner(function (module) {
-    module.helloWorld = function () {};
-    module.helloWorld.prototype.enter = function () {
-      console.log('Hello World!');
-    };
-  });
 
-  app.router.map(function (match) {
-    match('/').to('hello_world');
-  });
+thinner(function (module) {
+  module.helloWorld = function () {};
+  module.helloWorld.prototype.enter = function () {
+    console.log('Hello World!');
+  };
+});
 
-  app.run(function () {
-    app.go('/');
-  });
+app.router.map(function (match) {
+  match('/').to('hello_world');
+});
 
-})(thinner.loader());
+app.run(function () {
+  app.go('/');
+});
 ```
-
-or just cloning [this](https://github.com/pateketrueke/lineman-template) Lineman template.
 
 [![Build Status](https://travis-ci.org/pateketrueke/thinner.png)](https://travis-ci.org/pateketrueke/thinner)
