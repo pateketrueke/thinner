@@ -18,5 +18,5 @@
   "scripts": {
     "prepublish": ["./routerjs.sh"]
   },
-  "main": "index.js"
+  "main": "thinner.js"
 }
