@@ -5,9 +5,9 @@
 
 In order to work, thinner needs:
 
-  - route-recognizer.js ([source](https://raw.github.com/tildeio/route-recognizer/master/dist/route-recognizer.js))
-  - rsvp.js ([source](http://rsvpjs-builds.s3.amazonaws.com/rsvp-latest.js))
-  - router.js ([source](http://routerjs.builds.emberjs.com.s3.amazonaws.com/router.js))
+  - route-recognizer.js ([source](https://github.com/tildeio/route-recognizer))
+  - rsvp.js ([source](https://github.com/tildeio/rsvp.js))
+  - router.js ([source](https://github.com/tildeio/router.js))
 
 Also you can include [RactiveJS](https://github.com/Rich-Harris/Ractive) and [jQuery](https://github.com/jquery/jquery) to
 provide action handling and data-binding within your views.
