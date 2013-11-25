@@ -1,0 +1,12 @@
+*~
+.DS_Store
+
+/app
+/spec
+/vendor
+/config
+/generated
+
+bower.json
+routerjs.sh
+Gruntfile.js
