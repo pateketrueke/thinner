@@ -24,7 +24,9 @@
           return new Ractive(params);
         });
 
-        obj.setup();
+        if (obj.setup && 'function' === typeof obj.setup) {
+          obj.setup();
+        }
       }
 
       return obj;

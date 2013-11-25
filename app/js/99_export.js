@@ -31,16 +31,6 @@
   };
 
 
-  // runner
-  thinner.bind = function (block) {
-    var that = loader();
-
-    block.call(that, that);
-
-    return thinner;
-  };
-
-
   // expose
   if ('undefined' !== typeof module && module.exports) {
     module.exports = thinner;
