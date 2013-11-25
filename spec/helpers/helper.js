@@ -2,7 +2,7 @@ var root = this;
 
 root.context = root.describe;
 root.xcontext = root.xdescribe;
-root._$blanket = root._$jscoverage;
+root._$blanket = root._$jscoverage = {};
 
 // TODO: jQuery WAT
 
