@@ -22,3 +22,6 @@ echo "OK"
 printf "\rFetching route-recognizer ... "
 curl -sL $ROUTE_RECOGNIZER > $LIBDIR/route-recognizer.js
 echo "OK"
+
+# inception
+echo "module.exports = require('../generated/coverage/main');" > $LIBDIR/thinner.js
