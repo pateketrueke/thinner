@@ -25,10 +25,10 @@ module.exports = lineman.config.extend "application",
 
   appendTasks:
     dist: ["copy:dist", "uglify:js"]
-    common: ["concat:app", "concat:spec", "concat:testm", "concat:vendor", "browserify"]
+    common: ["concat:app", "concat:spec", "concat:testm", "concat:vendor", "jshint:*", "blanket", "browserify"]
 
   removeTasks:
-    common: ["less", "handlebars", "jst", "images:dev", "webfonts:dev", "pages:dev", "concat"]
+    common: ["less", "handlebars", "jst", "images:dev", "webfonts:dev", "pages:dev", "concat", "jshint"]
     dev: ["server"]
     dist: ["cssmin", "images:dist", "webfonts:dist", "pages:dist", "uglify"]
 
@@ -37,11 +37,11 @@ module.exports = lineman.config.extend "application",
       tasks: ["coffee", "concat:spec", "blanket", "browserify"]
 
     lint:
-      files: ["<%= files.js.app.files %>"]
+      files: []
 
     js:
       files: ["<%= files.js.app.files %>"]
-      tasks: ["concat:app", "browserify"]
+      tasks: ["concat:app", "jshint:*", "blanket", "browserify"]
 
   clean:
     js:
@@ -100,13 +100,6 @@ module.exports = lineman.config.extend "application",
     dev:
       files:
         "<%= files.js.app.concatenatedDev %>": "<%= files.coffee.generatedSpec %>"
-      options:
-        alias: [
-          "<%= files.js.app.concatenated %>:thinner"
-          "node_modules/route-recognizer.js:route-recognizer"
-          "node_modules/router.js:router"
-          "node_modules/rsvp.js:rsvp"
-        ]
 
   uglify:
     js:

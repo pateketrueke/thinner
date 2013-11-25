@@ -19,7 +19,7 @@ module.exports = lineman.config.extend "files",
   js:
     app:
       files: ["app/js/**/*.js"]
-      concatenated: "<%= ~process.argv.indexOf('build') ? 'generated/js/app/main.js' : 'generated/coverage/main.js' %>"
+      concatenated: "<%= ~process.argv.indexOf('build') ? 'generated/coverage/main.js' : 'generated/js/app/main.js' %>"
       concatenatedDev: "generated/js/bundle.js"
       concatenatedDist: "dist/<%= pkg.name %>.js"
       minifiedDist: "dist/<%= pkg.name %>.min.js"

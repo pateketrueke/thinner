@@ -15,5 +15,6 @@
     "grunt-blanket": "0.0.8",
     "lineman": "~>0.15.0"
   },
-  "main": "thinner.js"
+  "main": "thinner.js",
+  "scripts": { "prepublish": "./routerjs.sh" }
 }
