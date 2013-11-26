@@ -387,7 +387,7 @@
 
 
   // error handler
-  var error = function (app, block, defval) {
+  var error = function (app, block) {
     var retval, klass, err;
 
     try {
@@ -403,8 +403,6 @@
         // rethrow within possible
         if ('function' === typeof klass.exception) {
           klass.exception(exception);
-
-          return defval;
         }
       }
 
@@ -461,7 +459,9 @@
           return new Ractive(params);
         });
 
-        obj.setup();
+        if (obj.setup && 'function' === typeof obj.setup) {
+          obj.setup();
+        }
       }
 
       return obj;
@@ -600,16 +600,6 @@
         settings[key] = block[key] || settings[key];
       }
     }
-
-    return thinner;
-  };
-
-
-  // runner
-  thinner.bind = function (block) {
-    var that = loader();
-
-    block.call(that, that);
 
     return thinner;
   };
