@@ -9,8 +9,6 @@
     "vendor",
     "Gruntfile.js",
     "package.json",
-    "routerjs.sh",
-    "/thinner.js",
     "README.md"
   ],
   "devDependencies": {

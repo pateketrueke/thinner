@@ -13,8 +13,10 @@
     "grunt-contrib-copy": "~0.4.1",
     "grunt-bower-task": "~0.3.2",
     "grunt-blanket": "0.0.8",
-    "lineman": "~>0.15.0"
+    "lineman": "~>0.18.2"
   },
-  "main": "thinner.js",
-  "scripts": { "prepublish": "./routerjs.sh" }
+  "dependencies": {
+    "routerjs": "~0.0.1"
+  },
+  "main": "dist/thinner.js"
 }
