@@ -10,7 +10,7 @@
     "Gruntfile.js",
     "package.json",
     "routerjs.sh",
-    "thinner.js",
+    "/thinner.js",
     "README.md"
   ],
   "devDependencies": {
