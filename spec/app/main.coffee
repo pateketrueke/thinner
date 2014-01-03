@@ -1,4 +1,3 @@
-jsdom = require('jsdom')
 Router = require('routerjs').default
 thinner = require('../../dist/thinner')
 global.jQuery = global.$ = require('jQuery')

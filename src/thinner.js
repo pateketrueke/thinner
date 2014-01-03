@@ -1,4 +1,4 @@
-(function() {
+(function(undefined) {
   'use strict';
 
   // shortcuts

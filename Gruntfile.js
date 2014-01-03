@@ -47,6 +47,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-expand-include');
 
-  grunt.registerTask('default', ['expand-include', 'jshint', 'jasmine_node']);
-  grunt.registerTask('build', ['expand-include', 'uglify']);
+  grunt.registerTask('default', ['expand-include', 'jshint']);
+  grunt.registerTask('build', ['default', 'uglify']);
+  grunt.registerTask('test', ['jasmine_node']);
 };
