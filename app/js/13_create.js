@@ -14,15 +14,8 @@
       modules: [],
 
       // context
-      helpers: {},
       classes: {},
       handlers: {},
-
-
-      // templating
-      render: function (path, vars) {
-        return partial(path, vars, app.helpers);
-      },
 
 
       // registry

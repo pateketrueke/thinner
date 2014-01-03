@@ -3,13 +3,8 @@ describe 'Our application:', ->
   thinner.setup ->
   thinner.setup {}
   thinner.setup { x: 'y' }
-  thinner.setup { templates: { x: (v) -> v.x() } }
 
   app.run ->
-    it 'can render() JST-templates', ->
-      app.helpers.x = -> 'y'
-      expect(app.render 'x').toBe 'y'
-
     it 'can store/retrieve registry values', ->
       app.set 'x', 'y'
       expect(app.get 'x').toBe 'y'

@@ -16,7 +16,6 @@
     el: '',
     log: null,
     listen: 'click doubleclick submit input change',
-    templates: global.JST || {},
     context: global,
     router : null
   };
