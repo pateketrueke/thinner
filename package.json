@@ -1,7 +1,6 @@
 {
   "name": "thinner",
   "version": "0.9.0",
-  "date": "20140103",
   "description": "Volatile tools",
   "homepage": "https://github.com/pateketrueke/thinner",
   "main": "dist/thinner.js",
