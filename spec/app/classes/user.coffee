@@ -5,3 +5,6 @@ class User
 
   constructor: (params) ->
     @[key] = value for key, value of params
+
+
+module.exports = User
