@@ -21,6 +21,7 @@
   include('helpers/util.js');
   include('helpers/debug.js');
   include('helpers/extend.js');
+  include('helpers/handle.js');
   include('helpers/inflect.js');
   include('helpers/registry.js');
   include('helpers/url_params.js');
@@ -29,7 +30,6 @@
   include('router/transform.js');
   include('router/delegate.js');
   include('router/dispose.js');
-  include('router/handle.js');
   include('router/grow.js');
 
   include('base/view.js');
