@@ -26,6 +26,7 @@
   include('helpers/url_params.js');
 
   include('router/broker.js');
+  include('router/transform.js');
   include('router/delegate.js');
   include('router/dispose.js');
   include('router/handle.js');

@@ -29,11 +29,13 @@ describe 'Our application:', ->
       it 'should display "Hello World" at /', (done) ->
         app.go('/').then ->
           expect(app.get('x')).toBe 'Hello World'
+          expect(app.get('hi')).toBeUndefined()
           done()
 
       it 'should display "Hi dude!" at /hi/dude', (done) ->
         app.go('/hi/dude').then ->
           expect(app.get('x')).toBe 'Hi dude!'
+          expect(app.get('hi')).toBe 'everybody'
           done()
 
       it 'should display "new" at /hi/new', (done) ->
@@ -52,7 +54,7 @@ describe 'Our application:', ->
           done()
 
       it 'should handle registered data-actions', (done) ->
-        app.go('explode_this').then ->
+        app.go('explodeThis').then ->
           $('.js-action').trigger 'click'
           expect(app.get('x')).toBe 'xy'
           done()

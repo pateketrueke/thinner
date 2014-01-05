@@ -11,7 +11,6 @@ var create = function() {
 
     // setup
     history: [],
-    modules: [],
 
     // context
     classes: {},
@@ -33,6 +32,20 @@ var create = function() {
       return error(app, function() {
         return app.router.recognizer.generate(name, params);
       });
+    },
+
+
+    // common routing
+    route: function(path, params) {
+      var tmp;
+
+      if (2 === arguments.length) {
+        tmp = {};
+        tmp[path] = params;
+        path = tmp;
+      }
+
+      transform(app, path);
     },
 
 
@@ -70,6 +83,8 @@ var create = function() {
         module.call(app, app.classes);
       }
 
+      // refinements
+      transform(app, app.classes);
 
       // initialize
       if ('function' === typeof block) {

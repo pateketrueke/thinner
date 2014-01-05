@@ -1,26 +1,48 @@
-Router = require('routerjs').default
-thinner = require('../../dist/thinner')
 global.jQuery = global.$ = require('jQuery')
 
+thinner = require('../../dist/thinner')
+Router = require('routerjs').default
+
+# initialization
 app = thinner.setup(
   router: new Router()
   el: $('body')
 ).scope()
 
-app.router.map (match) ->
-  match('/').to 'home'
-  match('/hi/new').to 'make'
-  match('/hi/:name').to 'show'
-  match('/do/:test').to 'test_view'
-  match('/some_path').to 'my.handler'
-  match('/some/actions').to 'explode_this'
-
+# per-module loading (legacy)
 thinner (App) ->
+  app.router.map (match) ->
+    match('/').to 'home'
+
   App.home = require('./modules/home')(app)
-  App.show = require('./modules/show')(app)
-  App.make = require('./modules/make')(app)
-  App.testView = require('./modules/test-view')(app)
-  App.explodeThis = require('./modules/explode-this')(app)
+
+# per-group route matching (new approach)
+thinner (App) ->
+
+  App.make =
+    path: '/hi/new'
+    handler: require('./modules/make')
+
+# nested-group route matching (new approach equivalent)
+app.route
+  init:
+    path: '/hi'
+    handler: require('./modules/init')
+    routes:
+      show:
+        path: '/:name'
+        handler: require('./modules/show')
+
+# hash-like style (new approach equivalent)
+app.route
+  testView:
+    path: '/do/:test'
+    handler: require('./modules/test-view')
+
+# single route (new approach equivalent)
+app.route 'explodeThis',
+  path: '/some/actions'
+  handler: require('./modules/explode-this')
 
 
 module.exports = app
