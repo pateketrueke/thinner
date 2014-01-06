@@ -96,6 +96,24 @@
     }
   };
 
+  // mixin for grown-up handlers
+  var handle = function(self, mixin) {
+    var key;
+
+    // loop all methods
+    if ('object' === typeof mixin) {
+      for (key in mixin) {
+        if ('function' === typeof mixin[key]) {
+          mixin[key] = handle(self, mixin[key]);
+        }
+      }
+    } else if ('function' === typeof mixin) {
+      return function() { return mixin.apply(self, arguments); };
+    }
+
+    return mixin;
+  };
+
   // nice handlers
   var camelize = function(str) {
     return str.replace(/[._-][a-z]/g, function($0) { return $0.substr(1).toUpperCase(); });
@@ -164,6 +182,43 @@
     throw new Error('<' + klass + '> undefined handler!');
   };
 
+  // nice routing
+  var transform = function(app, routes) {
+    var expand, map;
+
+    expand = function(handler, params) {
+      return function(match) {
+        var route;
+
+        if (!params.routes) {
+          route = match(params.path).to(handler);
+        } else {
+          route = match(params.path).to(handler, map(params.routes));
+        }
+
+        if (params.params) {
+          route.withQueryParams.apply(route, params.params);
+        }
+
+        app.classes[handler] = params.handler(app);
+      };
+    };
+
+    map = function(handlers) {
+      return function(match) {
+        var handler;
+
+        for (handler in handlers) {
+          if ('object' === typeof handlers[handler]) {
+            expand(handler, handlers[handler])(match);
+          }
+        }
+      };
+    };
+
+    app.router.map(map(routes));
+  };
+
   // bind handlers
   var delegate = function(from, name) {
     var handler;
@@ -195,24 +250,6 @@
 
       return retval;
     };
-  };
-
-  // mixin for grown-up handlers
-  var handle = function(self, mixin) {
-    var key;
-
-    // loop all methods
-    if ('object' === typeof mixin) {
-      for (key in mixin) {
-        if ('function' === typeof mixin[key]) {
-          mixin[key] = handle(self, mixin[key]);
-        }
-      }
-    } else if ('function' === typeof mixin) {
-      return function() { return mixin.apply(self, arguments); };
-    }
-
-    return mixin;
   };
 
   // handled methods on error
@@ -403,7 +440,6 @@
 
       // setup
       history: [],
-      modules: [],
 
       // context
       classes: {},
@@ -425,6 +461,20 @@
         return error(app, function() {
           return app.router.recognizer.generate(name, params);
         });
+      },
+
+
+      // common routing
+      route: function(path, params) {
+        var tmp;
+
+        if (2 === arguments.length) {
+          tmp = {};
+          tmp[path] = params;
+          path = tmp;
+        }
+
+        transform(app, path);
       },
 
 
@@ -462,6 +512,8 @@
           module.call(app, app.classes);
         }
 
+        // refinements
+        transform(app, app.classes);
 
         // initialize
         if ('function' === typeof block) {
@@ -553,7 +605,7 @@
     major: 0,
     minor: 9,
     micro: 0,
-    date: 20140103
+    date: 20140105
   };
 
 
