@@ -16,6 +16,8 @@ var create = function() {
     classes: {},
     handlers: {},
 
+    // DOM-root
+    element: settings.el,
 
     // registry
     set: function(key, value) {
