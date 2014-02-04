@@ -445,6 +445,8 @@
       classes: {},
       handlers: {},
 
+      // DOM-root
+      element: settings.el,
 
       // registry
       set: function(key, value) {
@@ -604,8 +606,8 @@
   thinner.version = {
     major: 0,
     minor: 9,
-    micro: 0,
-    date: 20140105
+    micro: 1,
+    date: 20140203
   };
 
 
