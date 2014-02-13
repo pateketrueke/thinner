@@ -16,7 +16,7 @@ module.exports = function(grunt) {
     jasmine_node: {
       useCoffee: true,
       extensions: 'coffee',
-      projectRoot: __dirname
+      projectRoot: './spec'
     },
     'expand-include': {
       build: {
